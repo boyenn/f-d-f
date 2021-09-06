@@ -13,18 +13,15 @@
 #include <direct.h>
 #define IS_DIR_SEP(C) ((C) == '/' || (C) == '\\')
 #define stat _stat
-#define mkdir(P,X) _mkdir(P)
+#define mkdir(P, X) _mkdir(P)
 #define S_IFDIR _S_IFDIR
 #else
 #define IS_DIR_SEP(C) ((C) == '/')
 #endif
 
-
-
 //==============================================================================
 // Saving & Loading Seeds
 //==============================================================================
-
 
 uint64_t *loadSavedSeeds(const char *fnam, uint64_t *scnt)
 {
@@ -40,21 +37,27 @@ uint64_t *loadSavedSeeds(const char *fnam, uint64_t *scnt)
 
     while (!feof(fp))
     {
-        if (fscanf(fp, "%" PRId64, (int64_t*)&seed) == 1) (*scnt)++;
-        else while (!feof(fp) && fgetc(fp) != '\n');
+        if (fscanf(fp, "%" PRId64, (int64_t *)&seed) == 1)
+            (*scnt)++;
+        else
+            while (!feof(fp) && fgetc(fp) != '\n')
+                ;
     }
 
     if (*scnt == 0)
         return NULL;
 
-    baseSeeds = (uint64_t*) calloc(*scnt, sizeof(*baseSeeds));
+    baseSeeds = (uint64_t *)calloc(*scnt, sizeof(*baseSeeds));
 
     rewind(fp);
 
     for (i = 0; i < *scnt && !feof(fp);)
     {
-        if (fscanf(fp, "%" PRId64, (int64_t*)&baseSeeds[i]) == 1) i++;
-        else while (!feof(fp) && fgetc(fp) != '\n');
+        if (fscanf(fp, "%" PRId64, (int64_t *)&baseSeeds[i]) == 1)
+            i++;
+        else
+            while (!feof(fp) && fgetc(fp) != '\n')
+                ;
     }
 
     fclose(fp);
@@ -62,16 +65,13 @@ uint64_t *loadSavedSeeds(const char *fnam, uint64_t *scnt)
     return baseSeeds;
 }
 
-
-
 //==============================================================================
 // Finding Structure Positions
 //==============================================================================
 
-
 void setAttemptSeed(uint64_t *s, int cx, int cz)
 {
-    *s ^= (uint64_t)(cx >> 4) ^ ( (uint64_t)(cz >> 4) << 4 );
+    *s ^= (uint64_t)(cx >> 4) ^ ((uint64_t)(cz >> 4) << 4);
     setSeed(s, *s);
     next(s, 31);
 }
@@ -86,7 +86,8 @@ uint64_t getPopulationSeed(int mc, uint64_t ws, int x, int z)
     b = nextLong(&s);
     if (mc >= MC_1_13)
     {
-        a |= 1; b |= 1;
+        a |= 1;
+        b |= 1;
     }
     else
     {
@@ -95,7 +96,6 @@ uint64_t getPopulationSeed(int mc, uint64_t ws, int x, int z)
     }
     return (x * a + z * b) ^ ws;
 }
-
 
 int getStructureConfig(int structureType, int mc, StructureConfig *sconf)
 {
@@ -164,12 +164,10 @@ int getStructureConfig(int structureType, int mc, StructureConfig *sconf)
     }
 }
 
-
 // like getFeaturePos(), but modifies the rng seed
-static inline
-void getRegPos(Pos *p, uint64_t *s, int rx, int rz, StructureConfig sc)
+static inline void getRegPos(Pos *p, uint64_t *s, int rx, int rz, StructureConfig sc)
 {
-    setSeed(s, rx*341873128712ULL + rz*132897987541ULL + *s + sc.salt);
+    setSeed(s, rx * 341873128712ULL + rz * 132897987541ULL + *s + sc.salt);
     p->x = (int)(((uint64_t)rx * sc.regionSize + nextInt(s, sc.chunkRange)) << 4);
     p->z = (int)(((uint64_t)rz * sc.regionSize + nextInt(s, sc.chunkRange)) << 4);
 }
@@ -208,7 +206,7 @@ int getStructurePos(int structureType, int mc, uint64_t seed, int regX, int regZ
 
     case End_City:
         *pos = getLargeStructurePos(sconf, seed, regX, regZ);
-        return (pos->x*(int64_t)pos->x + pos->z*(int64_t)pos->z) >= 1008*1008LL;
+        return (pos->x * (int64_t)pos->x + pos->z * (int64_t)pos->z) >= 1008 * 1008LL;
 
     case Outpost:
         *pos = getFeaturePos(sconf, seed, regX, regZ);
@@ -216,9 +214,9 @@ int getStructurePos(int structureType, int mc, uint64_t seed, int regX, int regZ
         return nextInt(&seed, 5) == 0;
 
     case Treasure:
-        pos->x = (int)( ((uint32_t)regX << 4) + 9 );
-        pos->z = (int)( ((uint32_t)regZ << 4) + 9 );
-        seed = regX*341873128712ULL + regZ*132897987541ULL + seed + sconf.salt;
+        pos->x = (int)(((uint32_t)regX << 4) + 9);
+        pos->z = (int)(((uint32_t)regZ << 4) + 9);
+        seed = regX * 341873128712ULL + regZ * 132897987541ULL + seed + sconf.salt;
         setSeed(&seed, seed);
         return nextFloat(&seed) < 0.01;
 
@@ -226,13 +224,16 @@ int getStructurePos(int structureType, int mc, uint64_t seed, int regX, int regZ
         return getMineshafts(mc, seed, regX, regZ, regX, regZ, pos, 1);
 
     case Fortress:
-        if (mc < MC_1_16) {
+        if (mc < MC_1_16)
+        {
             setAttemptSeed(&seed, regX << 4, regZ << 4);
             int valid = nextInt(&seed, 3) == 0;
-            pos->x = (int)((((uint64_t)regX << 4) + nextInt(&seed,8) + 4) << 4);
-            pos->z = (int)((((uint64_t)regZ << 4) + nextInt(&seed,8) + 4) << 4);
+            pos->x = (int)((((uint64_t)regX << 4) + nextInt(&seed, 8) + 4) << 4);
+            pos->z = (int)((((uint64_t)regZ << 4) + nextInt(&seed, 8) + 4) << 4);
             return valid;
-        } else {
+        }
+        else
+        {
             getRegPos(pos, &seed, regX, regZ, sconf);
             return nextInt(&seed, 5) < 2;
         }
@@ -242,14 +243,17 @@ int getStructurePos(int structureType, int mc, uint64_t seed, int regX, int regZ
         return nextInt(&seed, 5) >= 2;
 
     case End_Gateway:
-        pos->x = (int)( ((uint32_t)regX << 4) );
-        pos->z = (int)( ((uint32_t)regZ << 4) );
+        pos->x = (int)(((uint32_t)regX << 4));
+        pos->z = (int)(((uint32_t)regZ << 4));
         setSeed(&seed, getPopulationSeed(mc, seed, pos->x, pos->z) + sconf.salt);
-        if (mc <= MC_1_16) {
+        if (mc <= MC_1_16)
+        {
             if (nextInt(&seed, 700) != 0)
                 return 0;
-        } else {
-            if (nextFloat(&seed) >= 1.0/700)
+        }
+        else
+        {
+            if (nextFloat(&seed) >= 1.0 / 700)
                 return 0;
         }
         pos->x += nextInt(&seed, 16);
@@ -264,9 +268,8 @@ int getStructurePos(int structureType, int mc, uint64_t seed, int regX, int regZ
     return 0;
 }
 
-
 int getMineshafts(int mc, uint64_t seed, int cx0, int cz0, int cx1, int cz1,
-        Pos *out, int nout)
+                  Pos *out, int nout)
 {
     uint64_t s;
     setSeed(&s, seed);
@@ -285,7 +288,7 @@ int getMineshafts(int mc, uint64_t seed, int cx0, int cz0, int cx1, int cz1,
 
             if (mc >= MC_1_13)
             {
-                if U(nextDouble(&s) < 0.004)
+                if U (nextDouble(&s) < 0.004)
                 {
                     if (out && n < nout)
                     {
@@ -298,12 +301,15 @@ int getMineshafts(int mc, uint64_t seed, int cx0, int cz0, int cx1, int cz1,
             else
             {
                 skipNextN(&s, 1);
-                if U(nextDouble(&s) < 0.004)
+                if U (nextDouble(&s) < 0.004)
                 {
                     int d = i;
-                    if (-i > d) d = -i;
-                    if (+j > d) d = +j;
-                    if (-j > d) d = -j;
+                    if (-i > d)
+                        d = -i;
+                    if (+j > d)
+                        d = +j;
+                    if (-j > d)
+                        d = -j;
                     if (d >= 80 || nextInt(&s, 80) < d)
                     {
                         if (out && n < nout)
@@ -321,15 +327,11 @@ int getMineshafts(int mc, uint64_t seed, int cx0, int cz0, int cx1, int cz1,
     return n;
 }
 
-
-
 //==============================================================================
 // Multi-Structure Checks
 //==============================================================================
 
 // TODO: accurate seed testers for two or three structures in range
-
-
 
 static int blocksInRange(Pos *p, int n, int x, int z, int ax, int az, double rsq)
 {
@@ -348,7 +350,7 @@ static int blocksInRange(Pos *p, int n, int x, int z, int ax, int az, double rsq
             {
                 double ddx = px + dx;
                 double ddz = pz + dz;
-                cnt += (ddx*ddx + ddz*ddz <= rsq);
+                cnt += (ddx * ddx + ddz * ddz <= rsq);
             }
         }
     }
@@ -371,37 +373,36 @@ static void checkAfkDist(afk_meta_t *d, int x, int z)
 {
     if (x < 0 || z < 0 || x >= d->w || z >= d->h)
         return;
-    if (d->buf[z*d->w+x])
+    if (d->buf[z * d->w + x])
         return;
 
-    int q = blocksInRange(d->p, d->n, x+d->x0, z+d->z0, d->ax, d->az, d->rsq);
-    d->buf[z*d->w+x] = q;
+    int q = blocksInRange(d->p, d->n, x + d->x0, z + d->z0, d->ax, d->az, d->rsq);
+    d->buf[z * d->w + x] = q;
     if (q >= d->best)
     {
         if (q > d->best)
         {
             d->best = q;
             d->sumn = 1;
-            d->sumx = d->x0+x;
-            d->sumz = d->z0+z;
+            d->sumx = d->x0 + x;
+            d->sumz = d->z0 + z;
         }
         else
         {
             d->sumn += 1;
-            d->sumx += d->x0+x;
-            d->sumz += d->z0+z;
+            d->sumx += d->x0 + x;
+            d->sumz += d->z0 + z;
         }
-        checkAfkDist(d, x, z-1);
-        checkAfkDist(d, x, z+1);
-        checkAfkDist(d, x-1, z);
-        checkAfkDist(d, x+1, z);
-        checkAfkDist(d, x-1, z-1);
-        checkAfkDist(d, x-1, z+1);
-        checkAfkDist(d, x+1, z-1);
-        checkAfkDist(d, x+1, z+1);
+        checkAfkDist(d, x, z - 1);
+        checkAfkDist(d, x, z + 1);
+        checkAfkDist(d, x - 1, z);
+        checkAfkDist(d, x + 1, z);
+        checkAfkDist(d, x - 1, z - 1);
+        checkAfkDist(d, x - 1, z + 1);
+        checkAfkDist(d, x + 1, z - 1);
+        checkAfkDist(d, x + 1, z + 1);
     }
 }
-
 
 Pos getOptimalAfk(Pos p[4], int ax, int ay, int az, int *spcnt)
 {
@@ -410,28 +411,32 @@ Pos getOptimalAfk(Pos p[4], int ax, int ay, int az, int *spcnt)
 
     for (i = 0; i < 4; i++)
     {
-        if (p[i].x < minX) minX = p[i].x;
-        if (p[i].z < minZ) minZ = p[i].z;
-        if (p[i].x > maxX) maxX = p[i].x;
-        if (p[i].z > maxZ) maxZ = p[i].z;
+        if (p[i].x < minX)
+            minX = p[i].x;
+        if (p[i].z < minZ)
+            minZ = p[i].z;
+        if (p[i].x > maxX)
+            maxX = p[i].x;
+        if (p[i].z > maxZ)
+            maxZ = p[i].z;
     }
 
-    minX += ax/2;
-    minZ += az/2;
-    maxX += ax/2;
-    maxZ += az/2;
+    minX += ax / 2;
+    minZ += az / 2;
+    maxX += ax / 2;
+    maxZ += az / 2;
 
-    double rsq = 128.0*128.0 - ay*ay/4.0;
+    double rsq = 128.0 * 128.0 - ay * ay / 4.0;
 
     w = maxX - minX;
     h = maxZ - minZ;
     Pos afk = {p[0].x + ax / 2, p[0].z + az / 2};
-    int cnt = ax*az;
+    int cnt = ax * az;
 
     afk_meta_t d;
     d.p = p;
     d.n = 4;
-    d.buf = (int*) calloc(w*h, sizeof(int));
+    d.buf = (int *)calloc(w * h, sizeof(int));
     d.x0 = minX;
     d.z0 = minZ;
     d.w = w;
@@ -464,7 +469,7 @@ Pos getOptimalAfk(Pos p[4], int ax, int ay, int az, int *spcnt)
                 vmax = v[j];
             }
         }
-        if (vmax <= ax*az)  // highest is less or equal to a single structure
+        if (vmax <= ax * az) // highest is less or equal to a single structure
             break;
 
         d.best = vmax;
@@ -475,9 +480,9 @@ Pos getOptimalAfk(Pos p[4], int ax, int ay, int az, int *spcnt)
         if (d.best > cnt)
         {
             cnt = d.best;
-            afk.x = (int) round(d.sumx / (double)d.sumn);
-            afk.z = (int) round(d.sumz / (double)d.sumn);
-            if (cnt >= 3*ax*az)
+            afk.x = (int)round(d.sumx / (double)d.sumn);
+            afk.z = (int)round(d.sumz / (double)d.sumn);
+            if (cnt >= 3 * ax * az)
                 break;
         }
         v[jmax] = 0;
@@ -490,7 +495,6 @@ Pos getOptimalAfk(Pos p[4], int ax, int ay, int az, int *spcnt)
 
     return afk;
 }
-
 
 #define MAX_PATHLEN 4096
 
@@ -510,7 +514,7 @@ STRUCT(threadinfo_t)
     int lowBitN;
 
     // testing function
-    int (*check)(uint64_t, void*);
+    int (*check)(uint64_t, void *);
     void *data;
 
     // output
@@ -519,24 +523,26 @@ STRUCT(threadinfo_t)
     linked_seeds_t ls;
 };
 
-
 static int mkdirp(char *path)
 {
     int err = 0, len = strlen(path);
     char *p = path;
 
 #if defined(_WIN32)
-    if (p[1] == ':') p += 2;
+    if (p[1] == ':')
+        p += 2;
 #endif
-    while (IS_DIR_SEP(*p)) p++;
+    while (IS_DIR_SEP(*p))
+        p++;
 
-    while (!err && p < path+len)
+    while (!err && p < path + len)
     {
         char *q = p;
         while (*q && !IS_DIR_SEP(*q))
             q++;
 
-        if (p != path) p[-1] = '/';
+        if (p != path)
+            p[-1] = '/';
         *q = 0;
 
         struct stat st;
@@ -545,12 +551,11 @@ static int mkdirp(char *path)
         else if (!S_ISDIR(st.st_mode))
             err = 1;
 
-        p = q+1;
+        p = q + 1;
     }
 
     return err;
 }
-
 
 #ifdef USE_PTHREAD
 static void *searchAll48Thread(void *data)
@@ -558,10 +563,10 @@ static void *searchAll48Thread(void *data)
 static DWORD WINAPI searchAll48Thread(LPVOID data)
 #endif
 {
-// TODO TEST:
-// lower bits with various ranges
+    // TODO TEST:
+    // lower bits with various ranges
 
-    threadinfo_t *info = (threadinfo_t*)data;
+    threadinfo_t *info = (threadinfo_t *)data;
 
     uint64_t seed = info->start;
     uint64_t end = info->end;
@@ -577,25 +582,26 @@ static DWORD WINAPI searchAll48Thread(LPVOID data)
         int idx;
 
         mid = info->start & hmask;
-        for (idx = 0; (seed = mid | info->lowBits[idx]) < info->start; idx++);
+        for (idx = 0; (seed = mid | info->lowBits[idx]) < info->start; idx++)
+            ;
 
         while (seed <= end)
         {
-            if U(info->check(seed, info->data))
+            if U (info->check(seed, info->data))
             {
                 if (info->fp)
                 {
-                    fprintf(info->fp, "%" PRId64"\n", (int64_t)seed);
+                    fprintf(info->fp, "%" PRId64 "\n", (int64_t)seed);
                     fflush(info->fp);
                 }
                 else
                 {
                     lp->seeds[lp->len] = seed;
                     lp->len++;
-                    if (lp->len >= sizeof(lp->seeds)/sizeof(uint64_t))
+                    if (lp->len >= sizeof(lp->seeds) / sizeof(uint64_t))
                     {
                         linked_seeds_t *n =
-                            (linked_seeds_t*) malloc(sizeof(linked_seeds_t));
+                            (linked_seeds_t *)malloc(sizeof(linked_seeds_t));
                         if (n == NULL)
                             exit(1);
                         lp->next = n;
@@ -620,21 +626,21 @@ static DWORD WINAPI searchAll48Thread(LPVOID data)
     {
         while (seed <= end)
         {
-            if U(info->check(seed, info->data))
+            if U (info->check(seed, info->data))
             {
                 if (info->fp)
                 {
-                    fprintf(info->fp, "%" PRId64"\n", (int64_t)seed);
+                    fprintf(info->fp, "%" PRId64 "\n", (int64_t)seed);
                     fflush(info->fp);
                 }
                 else
                 {
                     lp->seeds[lp->len] = seed;
                     lp->len++;
-                    if (lp->len >= sizeof(lp->seeds)/sizeof(uint64_t))
+                    if (lp->len >= sizeof(lp->seeds) / sizeof(uint64_t))
                     {
                         linked_seeds_t *n =
-                            (linked_seeds_t*) malloc(sizeof(linked_seeds_t));
+                            (linked_seeds_t *)malloc(sizeof(linked_seeds_t));
                         if (n == NULL)
                             exit(1);
                         lp->next = n;
@@ -654,21 +660,19 @@ static DWORD WINAPI searchAll48Thread(LPVOID data)
     return 0;
 }
 
-
 int searchAll48(
-        uint64_t **         seedbuf,
-        uint64_t *          buflen,
-        const char *        path,
-        int                 threads,
-        const uint64_t *    lowBits,
-        int                 lowBitCnt,
-        int                 lowBitN,
-        int (*check)(uint64_t s48, void *data),
-        void *              data
-        )
+    uint64_t **seedbuf,
+    uint64_t *buflen,
+    const char *path,
+    int threads,
+    const uint64_t *lowBits,
+    int lowBitCnt,
+    int lowBitN,
+    int (*check)(uint64_t s48, void *data),
+    void *data)
 {
-    threadinfo_t *info = (threadinfo_t*) malloc(threads* sizeof(*info));
-    thread_id_t *tids = (thread_id_t*) malloc(threads* sizeof(*tids));
+    threadinfo_t *info = (threadinfo_t *)malloc(threads * sizeof(*info));
+    thread_id_t *tids = (thread_id_t *)malloc(threads * sizeof(*tids));
     int i, t;
     int err = 0;
 
@@ -682,7 +686,7 @@ int searchAll48(
             goto L_err;
         strcpy(dpath, path);
 
-        for (i = pathlen-1; i >= 0; i--)
+        for (i = pathlen - 1; i >= 0; i--)
         {
             if (IS_DIR_SEP(dpath[i]))
             {
@@ -702,8 +706,8 @@ int searchAll48(
     // prepare the thread info and load progress if present
     for (t = 0; t < threads; t++)
     {
-        info[t].start = (t * (MASK48+1) / threads);
-        info[t].end = ((t+1) * (MASK48+1) / threads - 1);
+        info[t].start = (t * (MASK48 + 1) / threads);
+        info[t].end = ((t + 1) * (MASK48 + 1) / threads - 1);
         info[t].lowBits = lowBits;
         info[t].lowBitCnt = lowBitCnt;
         info[t].lowBitN = lowBitN;
@@ -724,13 +728,15 @@ int searchAll48(
             // find the last newline
             for (i = 1; i < 32; i++)
             {
-                if (fseek(fp, -i, SEEK_END)) break;
+                if (fseek(fp, -i, SEEK_END))
+                    break;
                 c = fgetc(fp);
-                if (c <= 0 || (nnl && c == '\n')) break;
+                if (c <= 0 || (nnl && c == '\n'))
+                    break;
                 nnl |= (c != '\n');
             }
 
-            if (i < 32 && !fseek(fp, 1-i, SEEK_END) && fread(buf, i-1, 1, fp) > 0)
+            if (i < 32 && !fseek(fp, 1 - i, SEEK_END) && fread(buf, i - 1, 1, fp) > 0)
             {
                 // read the last entry, and replace the start seed accordingly
                 int64_t lentry;
@@ -738,7 +744,7 @@ int searchAll48(
                 {
                     info[t].start = lentry;
                     printf("Continuing thread %d at seed %" PRId64 "\n",
-                        t, lentry);
+                           t, lentry);
                 }
             }
 
@@ -752,13 +758,12 @@ int searchAll48(
         }
     }
 
-
     // run the threads
 #ifdef USE_PTHREAD
 
     for (t = 0; t < threads; t++)
     {
-        pthread_create(&tids[t], NULL, searchAll48Thread, (void*)&info[t]);
+        pthread_create(&tids[t], NULL, searchAll48Thread, (void *)&info[t]);
     }
 
     for (t = 0; t < threads; t++)
@@ -771,7 +776,7 @@ int searchAll48(
     for (t = 0; t < threads; t++)
     {
         tids[t] = CreateThread(NULL, 0, searchAll48Thread,
-            (LPVOID)&info[t], 0, NULL);
+                               (LPVOID)&info[t], 0, NULL);
     }
 
     WaitForMultipleObjects(threads, tids, TRUE, INFINITE);
@@ -823,11 +828,10 @@ int searchAll48(
             {
                 *buflen += lp->len;
                 lp = lp->next;
-            }
-            while (lp);
+            } while (lp);
         }
 
-        *seedbuf = (uint64_t*) malloc((*buflen) * sizeof(uint64_t));
+        *seedbuf = (uint64_t *)malloc((*buflen) * sizeof(uint64_t));
         if (*seedbuf == NULL)
             exit(1);
 
@@ -843,13 +847,12 @@ int searchAll48(
                 lp = lp->next;
                 if (tmp != &info[t].ls)
                     free(tmp);
-            }
-            while (lp);
+            } while (lp);
         }
     }
 
     if (0)
-L_err:
+    L_err:
         err = 1;
 
     free(tids);
@@ -858,10 +861,9 @@ L_err:
     return err;
 }
 
-static inline
-int scanForQuadBits(const StructureConfig sconf, int radius, uint64_t s48,
-        uint64_t lbit, int lbitn, uint64_t invB, int64_t x, int64_t z,
-        int64_t w, int64_t h, Pos *qplist, int n)
+static inline int scanForQuadBits(const StructureConfig sconf, int radius, uint64_t s48,
+                                  uint64_t lbit, int lbitn, uint64_t invB, int64_t x, int64_t z,
+                                  int64_t w, int64_t h, Pos *qplist, int n)
 {
     const uint64_t m = (1ULL << lbitn);
     const uint64_t A = 341873128712ULL;
@@ -869,20 +871,20 @@ int scanForQuadBits(const StructureConfig sconf, int radius, uint64_t s48,
 
     if (n < 1)
         return 0;
-    lbit &= m-1;
+    lbit &= m - 1;
 
     int64_t i, j;
     int cnt = 0;
-    for (i = x; i <= x+w; i++)
+    for (i = x; i <= x + w; i++)
     {
         uint64_t sx = s48 + A * i;
-        j = (z & ~(m-1)) | ((lbit - sx) * invB & (m-1));
+        j = (z & ~(m - 1)) | ((lbit - sx) * invB & (m - 1));
         if (j < z)
             j += m;
-        for (; j <= z+h; j += m)
+        for (; j <= z + h; j += m)
         {
             uint64_t sp = moveStructure(s48, -i, -j);
-            if ((sp & (m-1)) != lbit)
+            if ((sp & (m - 1)) != lbit)
                 continue;
 
             if (isQuadBase(sconf, sp, radius))
@@ -900,9 +902,9 @@ int scanForQuadBits(const StructureConfig sconf, int radius, uint64_t s48,
 }
 
 int scanForQuads(
-        const StructureConfig sconf, int radius, uint64_t s48,
-        const uint64_t *lowBits, int lowBitCnt, int lowBitN, uint64_t salt,
-        int x, int z, int w, int h, Pos *qplist, int n)
+    const StructureConfig sconf, int radius, uint64_t s48,
+    const uint64_t *lowBits, int lowBitCnt, int lowBitN, uint64_t salt,
+    int x, int z, int w, int h, Pos *qplist, int n)
 {
     int i, cnt = 0;
     uint64_t invB;
@@ -915,8 +917,8 @@ int scanForQuads(
 
     for (i = 0; i < lowBitCnt; i++)
     {
-        cnt += scanForQuadBits(sconf, radius, s48, lowBits[i]-salt, lowBitN, invB,
-                x, z, w, h, qplist+cnt, n-cnt);
+        cnt += scanForQuadBits(sconf, radius, s48, lowBits[i] - salt, lowBitN, invB,
+                               x, z, w, h, qplist + cnt, n - cnt);
         if (cnt >= n)
             break;
     }
@@ -924,12 +926,9 @@ int scanForQuads(
     return cnt;
 }
 
-
-
 //==============================================================================
 // Checking Biomes & Biome Helper Functions
 //==============================================================================
-
 
 int getBiomeAtPos(const LayerStack *g, const Pos pos)
 {
@@ -941,22 +940,21 @@ int getBiomeAtPos(const LayerStack *g, const Pos pos)
 }
 
 Pos findBiomePosition(
-        const int mcversion,
-        const Layer *l,
-        int *cache,
-        const int centerX,
-        const int centerZ,
-        const int range,
-        const char *isValid,
-        uint64_t *seed,
-        int *passes
-        )
+    const int mcversion,
+    const Layer *l,
+    int *cache,
+    const int centerX,
+    const int centerZ,
+    const int range,
+    const char *isValid,
+    uint64_t *seed,
+    int *passes)
 {
-    int x1 = (centerX-range) >> 2;
-    int z1 = (centerZ-range) >> 2;
-    int x2 = (centerX+range) >> 2;
-    int z2 = (centerZ+range) >> 2;
-    int width  = x2 - x1 + 1;
+    int x1 = (centerX - range) >> 2;
+    int z1 = (centerZ - range) >> 2;
+    int x2 = (centerX + range) >> 2;
+    int z2 = (centerZ + range) >> 2;
+    int width = x2 - x1 + 1;
     int height = z2 - z1 + 1;
     int *ids;
     int i, j, found;
@@ -966,7 +964,7 @@ Pos findBiomePosition(
     if (l->scale != 4)
     {
         printf("WARN findBiomePosition: require scale = 4, but have %d.\n",
-                l->scale);
+               l->scale);
     }
 
     ids = cache ? cache : allocCache(l, width, height);
@@ -979,13 +977,14 @@ Pos findBiomePosition(
 
     if (mcversion >= MC_1_13)
     {
-        for (i = 0, j = 2; i < width*height; i++)
+        for (i = 0, j = 2; i < width * height; i++)
         {
-            if (!isValid[ids[i]]) continue;
+            if (!isValid[ids[i]])
+                continue;
             if ((found == 0 || nextInt(seed, j++) == 0))
             {
-                out.x = (x1 + i%width) << 2;
-                out.z = (z1 + i/width) << 2;
+                out.x = (x1 + i % width) << 2;
+                out.z = (z1 + i / width) << 2;
                 found = 1;
             }
         }
@@ -993,17 +992,16 @@ Pos findBiomePosition(
     }
     else
     {
-        for (i = 0; i < width*height; i++)
+        for (i = 0; i < width * height; i++)
         {
             if (isValid[ids[i]] && (found == 0 || nextInt(seed, found + 1) == 0))
             {
-                out.x = (x1 + i%width) << 2;
-                out.z = (z1 + i/width) << 2;
+                out.x = (x1 + i % width) << 2;
+                out.z = (z1 + i / width) << 2;
                 ++found;
             }
         }
     }
-
 
     if (cache == NULL)
     {
@@ -1018,15 +1016,13 @@ Pos findBiomePosition(
     return out;
 }
 
-
 int areBiomesViable(
-        const Layer *       l,
-        int *               cache,
-        const int           posX,
-        const int           posZ,
-        const int           radius,
-        const char *        isValid
-        )
+    const Layer *l,
+    int *cache,
+    const int posX,
+    const int posZ,
+    const int radius,
+    const char *isValid)
 {
     int x1 = (posX - radius) >> 2;
     int z1 = (posZ - radius) >> 2;
@@ -1041,7 +1037,7 @@ int areBiomesViable(
     if (l->scale != 4)
     {
         printf("WARN areBiomesViable: require scale = 4, but have %d.\n",
-                l->scale);
+               l->scale);
     }
 
     ids = cache ? cache : allocCache(l, width, height);
@@ -1049,9 +1045,9 @@ int areBiomesViable(
 
     if (viable)
     {
-        for (i = 0; i < width*height; i++)
+        for (i = 0; i < width * height; i++)
         {
-            if (!isValid[ ids[i] ])
+            if (!isValid[ids[i]])
             {
                 viable = 0;
                 break;
@@ -1064,30 +1060,65 @@ int areBiomesViable(
     return viable;
 }
 
-
 //==============================================================================
 // Finding Strongholds and Spawn
 //==============================================================================
 
-
-const char* getValidStrongholdBiomes(int mc)
+const char *getValidStrongholdBiomes(int mc)
 {
     static const int strongholdBiomes[] = {
-        plains, desert, mountains, forest, taiga, snowy_tundra, snowy_mountains,
-        mushroom_fields, mushroom_field_shore, desert_hills, wooded_hills,
-        taiga_hills, mountain_edge, jungle,jungle_hills, jungle_edge,
-        stone_shore, birch_forest, birch_forest_hills, dark_forest, snowy_taiga,
-        snowy_taiga_hills, giant_tree_taiga, giant_tree_taiga_hills,
-        wooded_mountains, savanna, savanna_plateau, badlands,
-        wooded_badlands_plateau, badlands_plateau, sunflower_plains,
-        desert_lakes, gravelly_mountains, flower_forest, taiga_mountains,
-        ice_spikes, modified_jungle, modified_jungle_edge, tall_birch_forest,
-        tall_birch_hills, dark_forest_hills, snowy_taiga_mountains,
-        giant_spruce_taiga, giant_spruce_taiga_hills,
-        modified_gravelly_mountains, shattered_savanna,
-        shattered_savanna_plateau, eroded_badlands,
-        modified_wooded_badlands_plateau, modified_badlands_plateau,
-        bamboo_jungle, bamboo_jungle_hills,
+        plains,
+        desert,
+        mountains,
+        forest,
+        taiga,
+        snowy_tundra,
+        snowy_mountains,
+        mushroom_fields,
+        mushroom_field_shore,
+        desert_hills,
+        wooded_hills,
+        taiga_hills,
+        mountain_edge,
+        jungle,
+        jungle_hills,
+        jungle_edge,
+        stone_shore,
+        birch_forest,
+        birch_forest_hills,
+        dark_forest,
+        snowy_taiga,
+        snowy_taiga_hills,
+        giant_tree_taiga,
+        giant_tree_taiga_hills,
+        wooded_mountains,
+        savanna,
+        savanna_plateau,
+        badlands,
+        wooded_badlands_plateau,
+        badlands_plateau,
+        sunflower_plains,
+        desert_lakes,
+        gravelly_mountains,
+        flower_forest,
+        taiga_mountains,
+        ice_spikes,
+        modified_jungle,
+        modified_jungle_edge,
+        tall_birch_forest,
+        tall_birch_hills,
+        dark_forest_hills,
+        snowy_taiga_mountains,
+        giant_spruce_taiga,
+        giant_spruce_taiga_hills,
+        modified_gravelly_mountains,
+        shattered_savanna,
+        shattered_savanna_plateau,
+        eroded_badlands,
+        modified_wooded_badlands_plateau,
+        modified_badlands_plateau,
+        bamboo_jungle,
+        bamboo_jungle_hills,
     };
 
     static char isValid115[256], isValid[256];
@@ -1097,14 +1128,14 @@ const char* getValidStrongholdBiomes(int mc)
     {
         if (!isValid115[strongholdBiomes[0]])
             for (i = 0; i < sizeof(strongholdBiomes) / sizeof(int); i++)
-                isValid115[ strongholdBiomes[i] ] = 1;
+                isValid115[strongholdBiomes[i]] = 1;
         return isValid115;
     }
     else
-    {   // simulate MC-199298
+    { // simulate MC-199298
         if (!isValid[strongholdBiomes[0]])
             for (i = 0; i < sizeof(strongholdBiomes) / sizeof(int); i++)
-                isValid[ strongholdBiomes[i] ] = 1;
+                isValid[strongholdBiomes[i]] = 1;
         isValid[bamboo_jungle] = 0;
         isValid[bamboo_jungle_hills] = 0;
         return isValid;
@@ -1148,8 +1179,8 @@ Pos initFirstStronghold(StrongholdIter *sh, int mc, uint64_t s48)
 int nextStronghold(StrongholdIter *sh, const LayerStack *g, int *cache)
 {
     sh->pos = findBiomePosition(sh->mc, &g->layers[L_RIVER_MIX_4], cache,
-        sh->nextapprox.x, sh->nextapprox.z, 112,
-        getValidStrongholdBiomes(sh->mc), &sh->rnds, NULL);
+                                sh->nextapprox.x, sh->nextapprox.z, 112,
+                                getValidStrongholdBiomes(sh->mc), &sh->rnds, NULL);
 
     sh->ringidx++;
     sh->angle += 2 * PI / sh->ringmax;
@@ -1158,16 +1189,16 @@ int nextStronghold(StrongholdIter *sh, const LayerStack *g, int *cache)
     {
         sh->ringnum++;
         sh->ringidx = 0;
-        sh->ringmax = sh->ringmax + 2*sh->ringmax / (sh->ringnum+1);
-        if (sh->ringmax > 128-sh->index)
-            sh->ringmax = 128-sh->index;
+        sh->ringmax = sh->ringmax + 2 * sh->ringmax / (sh->ringnum + 1);
+        if (sh->ringmax > 128 - sh->index)
+            sh->ringmax = 128 - sh->index;
         sh->angle += nextDouble(&sh->rnds) * PI * 2.0;
     }
 
     if (sh->mc >= MC_1_9)
     {
         sh->dist = (4.0 * 32.0) + (6.0 * sh->ringnum * 32.0) +
-            (nextDouble(&sh->rnds) - 0.5) * 32 * 2.5;
+                   (nextDouble(&sh->rnds) - 0.5) * 32 * 2.5;
     }
     else
     {
@@ -1178,11 +1209,11 @@ int nextStronghold(StrongholdIter *sh, const LayerStack *g, int *cache)
     sh->nextapprox.z = ((int)round(sin(sh->angle) * sh->dist) << 4) + 8;
     sh->index++;
 
-    return (sh->mc >= MC_1_9 ? 128 : 3) - (sh->index-1);
+    return (sh->mc >= MC_1_9 ? 128 : 3) - (sh->index - 1);
 }
 
 int findStrongholds(const int mc, const LayerStack *g, int *cache,
-        Pos *locations, uint64_t worldSeed, int maxSH, int maxRing)
+                    Pos *locations, uint64_t worldSeed, int maxSH, int maxRing)
 {
     const char *validStrongholdBiomes = getValidStrongholdBiomes(mc);
     int i, x, z;
@@ -1200,19 +1231,20 @@ int findStrongholds(const int mc, const LayerStack *g, int *cache,
 
     if (mc >= MC_1_9)
     {
-        if (maxSH <= 0) maxSH = 128;
+        if (maxSH <= 0)
+            maxSH = 128;
 
         for (i = 0; i < maxSH; i++)
         {
             distance = (4.0 * 32.0) + (6.0 * currentRing * 32.0) +
-                (nextDouble(&rnd) - 0.5) * 32 * 2.5;
+                       (nextDouble(&rnd) - 0.5) * 32 * 2.5;
 
             x = (int)round(cos(angle) * distance);
             z = (int)round(sin(angle) * distance);
 
             locations[i] = findBiomePosition(mc, l, cache,
-                    (x << 4) + 8, (z << 4) + 8, 112, validStrongholdBiomes,
-                    &rnd, NULL);
+                                             (x << 4) + 8, (z << 4) + 8, 112, validStrongholdBiomes,
+                                             &rnd, NULL);
 
             angle += 2 * PI / perRing;
 
@@ -1228,16 +1260,17 @@ int findStrongholds(const int mc, const LayerStack *g, int *cache,
                 }
 
                 currentCount = 0;
-                perRing = perRing + 2*perRing/(currentRing+1);
-                if (perRing > 128-i)
-                    perRing = 128-i;
+                perRing = perRing + 2 * perRing / (currentRing + 1);
+                if (perRing > 128 - i)
+                    perRing = 128 - i;
                 angle = angle + nextDouble(&rnd) * PI * 2.0;
             }
         }
     }
     else
     {
-        if (maxSH <= 0) maxSH = 3;
+        if (maxSH <= 0)
+            maxSH = 3;
 
         for (i = 0; i < maxSH; i++)
         {
@@ -1247,8 +1280,8 @@ int findStrongholds(const int mc, const LayerStack *g, int *cache,
             z = (int)round(sin(angle) * distance);
 
             locations[i] = findBiomePosition(mc, l, cache,
-                    (x << 4) + 8, (z << 4) + 8, 112, validStrongholdBiomes,
-                    &rnd, NULL);
+                                             (x << 4) + 8, (z << 4) + 8, 112, validStrongholdBiomes,
+                                             &rnd, NULL);
 
             angle += 2 * PI / 3.0;
         }
@@ -1257,68 +1290,112 @@ int findStrongholds(const int mc, const LayerStack *g, int *cache,
     return i;
 }
 
-
 static double getGrassProbability(uint64_t seed, int biome, int x, int z)
 {
-    (void) seed, (void) biome, (void) x, (void) z;
+    (void)seed, (void)biome, (void)x, (void)z;
     // TODO: Use ChunkGeneratorOverworld.generateHeightmap for better estimate.
     // TODO: Try to determine the actual probabilities and build a statistic.
     switch (biome)
     {
-    case plains:                        return 1.0;
-    case mountains:                     return 0.8; // height dependent
-    case forest:                        return 1.0;
-    case taiga:                         return 1.0;
-    case swamp:                         return 0.3; // height dependent
-    case river:                         return 0.15;
-    case beach:                         return 0.0;
-    case snowy_tundra:                  return 0.02;
-    case snowy_mountains:               return 0.02;
-    case wooded_hills:                  return 1.0;
-    case taiga_hills:                   return 1.0;
-    case mountain_edge:                 return 1.0; // height dependent
-    case jungle:                        return 1.0;
-    case jungle_hills:                  return 1.0;
-    case jungle_edge:                   return 1.0;
-    case birch_forest:                  return 1.0;
-    case birch_forest_hills:            return 1.0;
-    case dark_forest:                   return 0.9;
-    case snowy_taiga:                   return 0.1; // below trees
-    case snowy_taiga_hills:             return 0.1; // below trees
-    case giant_tree_taiga:              return 0.6;
-    case giant_tree_taiga_hills:        return 0.6;
-    case wooded_mountains:              return 0.2; // height dependent
-    case savanna:                       return 1.0;
-    case savanna_plateau:               return 0.9;
-    case wooded_badlands_plateau:       return 0.0; // height dependent
-    case badlands_plateau:              return 0.0; // height dependent
+    case plains:
+        return 1.0;
+    case mountains:
+        return 0.8; // height dependent
+    case forest:
+        return 1.0;
+    case taiga:
+        return 1.0;
+    case swamp:
+        return 0.3; // height dependent
+    case river:
+        return 0.15;
+    case beach:
+        return 0.0;
+    case snowy_tundra:
+        return 0.02;
+    case snowy_mountains:
+        return 0.02;
+    case wooded_hills:
+        return 1.0;
+    case taiga_hills:
+        return 1.0;
+    case mountain_edge:
+        return 1.0; // height dependent
+    case jungle:
+        return 1.0;
+    case jungle_hills:
+        return 1.0;
+    case jungle_edge:
+        return 1.0;
+    case birch_forest:
+        return 1.0;
+    case birch_forest_hills:
+        return 1.0;
+    case dark_forest:
+        return 0.9;
+    case snowy_taiga:
+        return 0.1; // below trees
+    case snowy_taiga_hills:
+        return 0.1; // below trees
+    case giant_tree_taiga:
+        return 0.6;
+    case giant_tree_taiga_hills:
+        return 0.6;
+    case wooded_mountains:
+        return 0.2; // height dependent
+    case savanna:
+        return 1.0;
+    case savanna_plateau:
+        return 0.9;
+    case wooded_badlands_plateau:
+        return 0.0; // height dependent
+    case badlands_plateau:
+        return 0.0; // height dependent
 
-    case sunflower_plains:              return 1.0;
-    case gravelly_mountains:            return 0.2;
-    case flower_forest:                 return 1.0;
-    case taiga_mountains:               return 1.0;
-    case swamp_hills:                   return 0.9;
-    case modified_jungle:               return 1.0;
-    case modified_jungle_edge:          return 1.0;
-    case tall_birch_forest:             return 1.0;
-    case tall_birch_hills:              return 1.0;
-    case dark_forest_hills:             return 0.9;
-    case snowy_taiga_mountains:         return 0.1;
-    case giant_spruce_taiga:            return 0.6;
-    case giant_spruce_taiga_hills:      return 0.6;
-    case modified_gravelly_mountains:   return 0.2;
-    case shattered_savanna:             return 1.0;
-    case shattered_savanna_plateau:     return 1.0;
-    case bamboo_jungle:                 return 0.4;
-    case bamboo_jungle_hills:           return 0.4;
+    case sunflower_plains:
+        return 1.0;
+    case gravelly_mountains:
+        return 0.2;
+    case flower_forest:
+        return 1.0;
+    case taiga_mountains:
+        return 1.0;
+    case swamp_hills:
+        return 0.9;
+    case modified_jungle:
+        return 1.0;
+    case modified_jungle_edge:
+        return 1.0;
+    case tall_birch_forest:
+        return 1.0;
+    case tall_birch_hills:
+        return 1.0;
+    case dark_forest_hills:
+        return 0.9;
+    case snowy_taiga_mountains:
+        return 0.1;
+    case giant_spruce_taiga:
+        return 0.6;
+    case giant_spruce_taiga_hills:
+        return 0.6;
+    case modified_gravelly_mountains:
+        return 0.2;
+    case shattered_savanna:
+        return 1.0;
+    case shattered_savanna_plateau:
+        return 1.0;
+    case bamboo_jungle:
+        return 0.4;
+    case bamboo_jungle_hills:
+        return 0.4;
     // NOTE: in rare circumstances you can get also get grassy islands that are
     // completely in ocean variants...
-    default: return 0;
+    default:
+        return 0;
     }
 }
 
-
-static const char* getValidSpawnBiomes()
+static const char *getValidSpawnBiomes()
 {
     static const int biomesToSpawnIn[] = {forest, plains, taiga, taiga_hills, wooded_hills, jungle, jungle_hills};
     static char isValid[256];
@@ -1326,11 +1403,10 @@ static const char* getValidSpawnBiomes()
 
     if (!isValid[biomesToSpawnIn[0]])
         for (i = 0; i < sizeof(biomesToSpawnIn) / sizeof(int); i++)
-            isValid[ biomesToSpawnIn[i] ] = 1;
+            isValid[biomesToSpawnIn[i]] = 1;
 
     return isValid;
 }
-
 
 Pos getSpawn(const int mcversion, const LayerStack *g, int *cache, uint64_t worldSeed)
 {
@@ -1344,7 +1420,7 @@ Pos getSpawn(const int mcversion, const LayerStack *g, int *cache, uint64_t worl
 
     setSeed(&rnd, worldSeed);
     spawn = findBiomePosition(mcversion, l, cache, 0, 0, 256, isSpawnBiome,
-            &rnd, &found);
+                              &rnd, &found);
 
     if (!found)
     {
@@ -1379,10 +1455,10 @@ Pos getSpawn(const int mcversion, const LayerStack *g, int *cache, uint64_t worl
                 {
                     for (z = 0; z < 16; z++)
                     {
-                        Pos pos = {cx+x, cz+z};
-                        int biome = area[z*16 + x];
+                        Pos pos = {cx + x, cz + z};
+                        int biome = area[z * 16 + x];
                         double gp = getGrassProbability(worldSeed, biome,
-                            pos.x, pos.z);
+                                                        pos.x, pos.z);
                         if (gp == 0)
                             continue;
 
@@ -1394,15 +1470,15 @@ Pos getSpawn(const int mcversion, const LayerStack *g, int *cache, uint64_t worl
                         if (accum < 0.001)
                         {
                             free(area);
-                            spawn.x = (int) round(bx / bn);
-                            spawn.z = (int) round(bz / bn);
+                            spawn.x = (int)round(bx / bn);
+                            spawn.z = (int)round(bz / bn);
                             return spawn;
                         }
                     }
                 }
             }
 
-            if (n2 == n3 || (n2 < 0 && n2 == - n3) || (n2 > 0 && n2 == 1 - n3))
+            if (n2 == n3 || (n2 < 0 && n2 == -n3) || (n2 > 0 && n2 == 1 - n3))
             {
                 int n7 = n4;
                 n4 = -n5;
@@ -1428,8 +1504,8 @@ Pos getSpawn(const int mcversion, const LayerStack *g, int *cache, uint64_t worl
             accum *= 1 - gp;
             if (accum < 0.001)
             {
-                spawn.x = (int) round(bx / bn);
-                spawn.z = (int) round(bz / bn);
+                spawn.x = (int)round(bx / bn);
+                spawn.z = (int)round(bz / bn);
                 break;
             }
 
@@ -1441,7 +1517,6 @@ Pos getSpawn(const int mcversion, const LayerStack *g, int *cache, uint64_t worl
     return spawn;
 }
 
-
 Pos estimateSpawn(const int mcversion, const LayerStack *g, int *cache, uint64_t worldSeed)
 {
     const char *isSpawnBiome = getValidSpawnBiomes();
@@ -1452,7 +1527,7 @@ Pos estimateSpawn(const int mcversion, const LayerStack *g, int *cache, uint64_t
     uint64_t rnd;
     setSeed(&rnd, worldSeed);
     spawn = findBiomePosition(mcversion, l, cache, 0, 0, 256, isSpawnBiome,
-            &rnd, &found);
+                              &rnd, &found);
 
     if (!found)
     {
@@ -1468,12 +1543,9 @@ Pos estimateSpawn(const int mcversion, const LayerStack *g, int *cache, uint64_t
     return spawn;
 }
 
-
-
 //==============================================================================
 // Validating Structure Positions
 //==============================================================================
-
 
 int isViableFeatureBiome(int mc, int structureType, int biomeID)
 {
@@ -1490,15 +1562,18 @@ int isViableFeatureBiome(int mc, int structureType, int biomeID)
         return biomeID == swamp;
 
     case Igloo:
-        if (mc < MC_1_9) return 0;
+        if (mc < MC_1_9)
+            return 0;
         return biomeID == snowy_tundra || biomeID == snowy_taiga;
 
     case Ocean_Ruin:
-        if (mc < MC_1_13) return 0;
+        if (mc < MC_1_13)
+            return 0;
         return isOceanic(biomeID);
 
     case Shipwreck:
-        if (mc < MC_1_13) return 0;
+        if (mc < MC_1_13)
+            return 0;
         return isOceanic(biomeID) || biomeID == beach || biomeID == snowy_beach;
 
     case Ruined_Portal:
@@ -1506,18 +1581,21 @@ int isViableFeatureBiome(int mc, int structureType, int biomeID)
         return mc >= MC_1_16;
 
     case Treasure:
-        if (mc < MC_1_13) return 0;
+        if (mc < MC_1_13)
+            return 0;
         return biomeID == beach || biomeID == snowy_beach;
 
     case Mineshaft:
         return isOverworld(mc, biomeID);
 
     case Monument:
-        if (mc < MC_1_8) return 0;
+        if (mc < MC_1_8)
+            return 0;
         return isDeepOcean(biomeID);
 
     case Outpost:
-        if (mc < MC_1_14) return 0;
+        if (mc < MC_1_14)
+            return 0;
         // fall through
     case Village:
         if (biomeID == plains || biomeID == desert || biomeID == savanna)
@@ -1529,7 +1607,8 @@ int isViableFeatureBiome(int mc, int structureType, int biomeID)
         return 0;
 
     case Mansion:
-        if (mc < MC_1_11) return 0;
+        if (mc < MC_1_11)
+            return 0;
         return biomeID == dark_forest || biomeID == dark_forest_hills;
 
     case Fortress:
@@ -1538,16 +1617,19 @@ int isViableFeatureBiome(int mc, int structureType, int biomeID)
                 biomeID == basalt_deltas);
 
     case Bastion:
-        if (mc < MC_1_16) return 0;
+        if (mc < MC_1_16)
+            return 0;
         return (biomeID == nether_wastes || biomeID == soul_sand_valley ||
                 biomeID == warped_forest || biomeID == crimson_forest);
 
     case End_City:
-        if (mc < MC_1_9) return 0;
+        if (mc < MC_1_9)
+            return 0;
         return biomeID == end_midlands || biomeID == end_highlands;
 
     case End_Gateway:
-        if (mc < MC_1_13) return 0;
+        if (mc < MC_1_13)
+            return 0;
         return biomeID == end_highlands;
 
     default:
@@ -1562,17 +1644,16 @@ int isViableFeatureBiome(int mc, int structureType, int biomeID)
 static const char *getValidMonumentBiomes1()
 {
     static const int oceanMonumentBiomeList1[] =
-    {
+        {
             ocean, deep_ocean, river, frozen_river,
             frozen_ocean, deep_frozen_ocean, cold_ocean, deep_cold_ocean,
-            lukewarm_ocean, deep_lukewarm_ocean, warm_ocean, deep_warm_ocean
-    };
+            lukewarm_ocean, deep_lukewarm_ocean, warm_ocean, deep_warm_ocean};
     static char isValid[256];
     unsigned int i;
 
     if (!isValid[oceanMonumentBiomeList1[0]])
         for (i = 0; i < sizeof(oceanMonumentBiomeList1) / sizeof(int); i++)
-            isValid[ oceanMonumentBiomeList1[i] ] = 1;
+            isValid[oceanMonumentBiomeList1[i]] = 1;
 
     return isValid;
 }
@@ -1580,48 +1661,46 @@ static const char *getValidMonumentBiomes1()
 static const char *getValidMonumentBiomes2()
 {
     static const int oceanMonumentBiomeList2[] =
-    {
+        {
             deep_frozen_ocean, deep_cold_ocean, deep_ocean,
-            deep_lukewarm_ocean, deep_warm_ocean
-    };
+            deep_lukewarm_ocean, deep_warm_ocean};
     static char isValid[256];
     unsigned int i;
 
     if (!isValid[oceanMonumentBiomeList2[0]])
         for (i = 0; i < sizeof(oceanMonumentBiomeList2) / sizeof(int); i++)
-            isValid[ oceanMonumentBiomeList2[i] ] = 1;
+            isValid[oceanMonumentBiomeList2[i]] = 1;
 
     return isValid;
 }
 
 static const char *getValidMansionBiomes()
 {
-    static const int mansionBiomeList[] = {dark_forest, dark_forest+128};
+    static const int mansionBiomeList[] = {dark_forest, dark_forest + 128};
     static char isValid[256];
     unsigned int i;
 
     if (!isValid[mansionBiomeList[0]])
         for (i = 0; i < sizeof(mansionBiomeList) / sizeof(int); i++)
-            isValid[ mansionBiomeList[i] ] = 1;
+            isValid[mansionBiomeList[i]] = 1;
 
     return isValid;
 }
 
-
-static int mapViableBiome(const Layer * l, int * out, int x, int z, int w, int h)
+static int mapViableBiome(const Layer *l, int *out, int x, int z, int w, int h)
 {
     int err = mapBiome(l, out, x, z, w, h);
-    if U(err != 0)
+    if U (err != 0)
         return err;
 
-    int styp = ((const int*) l->data)[0];
+    int styp = ((const int *)l->data)[0];
     int i, j;
 
     for (j = 0; j < h; j++)
     {
         for (i = 0; i < w; i++)
         {
-            int biomeID = out[i + w*j];
+            int biomeID = out[i + w * j];
             switch (styp)
             {
             case Desert_Pyramid:
@@ -1663,21 +1742,21 @@ static int mapViableBiome(const Layer * l, int * out, int x, int z, int w, int h
     return 1; // required biomes not found: set err status to stop generator
 }
 
-static int mapViableShore(const Layer * l, int * out, int x, int z, int w, int h)
+static int mapViableShore(const Layer *l, int *out, int x, int z, int w, int h)
 {
     int err = mapShore(l, out, x, z, w, h);
-    if U(err != 0)
+    if U (err != 0)
         return err;
 
-    int styp = ((const int*) l->data)[0];
-    int mc   = ((const int*) l->data)[1];
+    int styp = ((const int *)l->data)[0];
+    int mc = ((const int *)l->data)[1];
     int i, j;
 
     for (j = 0; j < h; j++)
     {
         for (i = 0; i < w; i++)
         {
-            int biomeID = out[i + w*j];
+            int biomeID = out[i + w * j];
             switch (styp)
             {
             case Desert_Pyramid:
@@ -1703,9 +1782,8 @@ static int mapViableShore(const Layer * l, int * out, int x, int z, int w, int h
     return 1;
 }
 
-
 int isViableStructurePos(int structureType, int mc, LayerStack *g,
-        uint64_t seed, int blockX, int blockZ)
+                         uint64_t seed, int blockX, int blockZ)
 {
     int *ids = NULL;
     Layer *l;
@@ -1722,11 +1800,11 @@ int isViableStructurePos(int structureType, int mc, LayerStack *g,
     Layer lbiome = g->layers[L_BIOME_256];
     Layer lshore = g->layers[L_SHORE_16];
 
-    int data[2] = { structureType, mc };
+    int data[2] = {structureType, mc};
 
-    g->layers[L_BIOME_256].data = (void*) data;
+    g->layers[L_BIOME_256].data = (void *)data;
     g->layers[L_BIOME_256].getMap = mapViableBiome;
-    g->layers[L_SHORE_16].data = (void*) data;
+    g->layers[L_SHORE_16].data = (void *)data;
     g->layers[L_SHORE_16].getMap = mapViableShore;
 
     switch (structureType)
@@ -1734,15 +1812,17 @@ int isViableStructurePos(int structureType, int mc, LayerStack *g,
     case Ocean_Ruin:
     case Shipwreck:
     case Treasure:
-        if (mc < MC_1_13) goto L_not_viable;
+        if (mc < MC_1_13)
+            goto L_not_viable;
         goto L_feature;
     case Igloo:
-        if (mc < MC_1_9) goto L_not_viable;
+        if (mc < MC_1_9)
+            goto L_not_viable;
         goto L_feature;
     case Desert_Pyramid:
     case Jungle_Pyramid:
     case Swamp_Hut:
-L_feature:
+    L_feature:
         if (mc < MC_1_16)
         {
             l = &g->layers[L_VORONOI_1];
@@ -1750,7 +1830,7 @@ L_feature:
             biomeZ = (chunkZ << 4) + 9;
         }
         else
-        {   // NOTE: L_RIVER_MIX_4 skips the ocean types, should be fine for
+        { // NOTE: L_RIVER_MIX_4 skips the ocean types, should be fine for
             // ocean ruins and ship wrecks.
             l = &g->layers[L_RIVER_MIX_4];
             biomeX = (chunkX << 2) + 2;
@@ -1792,7 +1872,7 @@ L_feature:
             biomeZ = (chunkZ << 4) + 9;
         }
         else
-        {   // NOTE: this skips the ocean type check
+        { // NOTE: this skips the ocean type check
             l = &g->layers[L_RIVER_MIX_4];
             biomeX = (chunkX << 2) + 2;
             biomeZ = (chunkZ << 2) + 2;
@@ -1804,8 +1884,8 @@ L_feature:
         if (!isViableFeatureBiome(mc, structureType, ids[0]))
             goto L_not_viable;
         // look for villages within 10 chunks
-        int cx0 = (chunkX-10), cx1 = (chunkX+10);
-        int cz0 = (chunkZ-10), cz1 = (chunkZ+10);
+        int cx0 = (chunkX - 10), cx1 = (chunkX + 10);
+        int cz0 = (chunkZ - 10), cz1 = (chunkZ + 10);
         int rx, rz;
         StructureConfig vilconf;
         if (!getStructureConfig(Village, mc, &vilconf))
@@ -1833,7 +1913,7 @@ L_feature:
         if (mc < MC_1_8)
             goto L_not_viable;
         else if (mc == MC_1_8)
-        {   // In 1.8 monuments require only a single deep ocean block.
+        { // In 1.8 monuments require only a single deep ocean block.
             l = g->entry_1;
             setLayerSeed(l, seed);
             ids = allocCache(l, 1, 1);
@@ -1841,7 +1921,7 @@ L_feature:
                 goto L_not_viable;
         }
         else
-        {   // Monuments require two viability checks with the ocean layer
+        { // Monuments require two viability checks with the ocean layer
             // branch => worth checking for potential deep ocean beforehand.
             l = &g->layers[L_SHORE_16];
             setLayerSeed(l, seed);
@@ -1904,7 +1984,7 @@ L_not_viable:
 }
 
 int isViableNetherStructurePos(int structureType, int mc, NetherNoise *nn,
-        uint64_t seed, int blockX, int blockZ)
+                               uint64_t seed, int blockX, int blockZ)
 {
     if (structureType == Fortress)
         return 1; // fortresses generate in all nether biomes and mc versions
@@ -1921,15 +2001,17 @@ int isViableNetherStructurePos(int structureType, int mc, NetherNoise *nn,
 }
 
 int isViableEndStructurePos(int structureType, int mc, EndNoise *en,
-        uint64_t seed, int blockX, int blockZ)
+                            uint64_t seed, int blockX, int blockZ)
 {
     switch (structureType)
     {
     case End_City:
-        if (mc < MC_1_9) return 0;
+        if (mc < MC_1_9)
+            return 0;
         break;
     case End_Gateway:
-        if (mc < MC_1_13) return 0;
+        if (mc < MC_1_13)
+            return 0;
         break;
     default:
         return 0;
@@ -1952,15 +2034,15 @@ int isViableEndStructurePos(int structureType, int mc, EndNoise *en,
  * Note that the noise columns should be of size: ncolxz[ colheight+1 ]
  */
 int getSurfaceHeight(
-        const double ncol00[], const double ncol01[],
-        const double ncol10[], const double ncol11[],
-        int colymin, int colymax, int blockspercell, double dx, double dz);
+    const double ncol00[], const double ncol01[],
+    const double ncol10[], const double ncol11[],
+    int colymin, int colymax, int blockspercell, double dx, double dz);
 
 void sampleNoiseColumnEnd(double column[], const SurfaceNoise *sn,
-        const EndNoise *en, int x, int z, int colymin, int colymax);
+                          const EndNoise *en, int x, int z, int colymin, int colymax);
 
 int isViableEndCityTerrain(const EndNoise *en, const SurfaceNoise *sn,
-        int blockX, int blockZ)
+                           int blockX, int blockZ)
 {
     int chunkX = blockX >> 4;
     int chunkZ = blockZ >> 4;
@@ -1970,85 +2052,86 @@ int isViableEndCityTerrain(const EndNoise *en, const SurfaceNoise *sn,
     int cellz = (blockZ >> 3);
     // TODO: make sure upper bound is ok
     const int y0 = 15, y1 = 18; // only check range that could yield h >= 60
-    double ncol[3][3][y1-y0+1];
+    double ncol[3][3][y1 - y0 + 1];
 
     sampleNoiseColumnEnd(ncol[0][0], sn, en, cellx, cellz, y0, y1);
-    sampleNoiseColumnEnd(ncol[0][1], sn, en, cellx, cellz+1, y0, y1);
-    sampleNoiseColumnEnd(ncol[1][0], sn, en, cellx+1, cellz, y0, y1);
-    sampleNoiseColumnEnd(ncol[1][1], sn, en, cellx+1, cellz+1, y0, y1);
+    sampleNoiseColumnEnd(ncol[0][1], sn, en, cellx, cellz + 1, y0, y1);
+    sampleNoiseColumnEnd(ncol[1][0], sn, en, cellx + 1, cellz, y0, y1);
+    sampleNoiseColumnEnd(ncol[1][1], sn, en, cellx + 1, cellz + 1, y0, y1);
 
     int h00, h01, h10, h11;
     h00 = getSurfaceHeight(ncol[0][0], ncol[0][1], ncol[1][0], ncol[1][1],
-            y0, y1, 4, (blockX & 7) / 8.0, (blockZ & 7) / 8.0);
+                           y0, y1, 4, (blockX & 7) / 8.0, (blockZ & 7) / 8.0);
 
     uint64_t cs;
     setSeed(&cs, chunkX + chunkZ * 10387313ULL);
     switch (nextInt(&cs, 4))
     {
     case 0: // (++) 0
-        sampleNoiseColumnEnd(ncol[0][2], sn, en, cellx+0, cellz+2, y0, y1);
-        sampleNoiseColumnEnd(ncol[1][2], sn, en, cellx+1, cellz+2, y0, y1);
-        sampleNoiseColumnEnd(ncol[2][0], sn, en, cellx+2, cellz+0, y0, y1);
-        sampleNoiseColumnEnd(ncol[2][1], sn, en, cellx+2, cellz+1, y0, y1);
-        sampleNoiseColumnEnd(ncol[2][2], sn, en, cellx+2, cellz+2, y0, y1);
+        sampleNoiseColumnEnd(ncol[0][2], sn, en, cellx + 0, cellz + 2, y0, y1);
+        sampleNoiseColumnEnd(ncol[1][2], sn, en, cellx + 1, cellz + 2, y0, y1);
+        sampleNoiseColumnEnd(ncol[2][0], sn, en, cellx + 2, cellz + 0, y0, y1);
+        sampleNoiseColumnEnd(ncol[2][1], sn, en, cellx + 2, cellz + 1, y0, y1);
+        sampleNoiseColumnEnd(ncol[2][2], sn, en, cellx + 2, cellz + 2, y0, y1);
         h01 = getSurfaceHeight(ncol[0][1], ncol[0][2], ncol[1][1], ncol[1][2],
-                y0, y1, 4, ((blockX    ) & 7) / 8.0, ((blockZ + 5) & 7) / 8.0);
+                               y0, y1, 4, ((blockX)&7) / 8.0, ((blockZ + 5) & 7) / 8.0);
         h10 = getSurfaceHeight(ncol[1][0], ncol[1][1], ncol[2][0], ncol[2][1],
-                y0, y1, 4, ((blockX + 5) & 7) / 8.0, ((blockZ    ) & 7) / 8.0);
+                               y0, y1, 4, ((blockX + 5) & 7) / 8.0, ((blockZ)&7) / 8.0);
         h11 = getSurfaceHeight(ncol[1][1], ncol[1][2], ncol[2][1], ncol[2][2],
-                y0, y1, 4, ((blockX + 5) & 7) / 8.0, ((blockZ + 5) & 7) / 8.0);
+                               y0, y1, 4, ((blockX + 5) & 7) / 8.0, ((blockZ + 5) & 7) / 8.0);
         break;
 
     case 1: // (-+) 90
-        sampleNoiseColumnEnd(ncol[0][2], sn, en, cellx+0, cellz+2, y0, y1);
-        sampleNoiseColumnEnd(ncol[1][2], sn, en, cellx+1, cellz+2, y0, y1);
+        sampleNoiseColumnEnd(ncol[0][2], sn, en, cellx + 0, cellz + 2, y0, y1);
+        sampleNoiseColumnEnd(ncol[1][2], sn, en, cellx + 1, cellz + 2, y0, y1);
         h01 = getSurfaceHeight(ncol[0][1], ncol[0][2], ncol[1][1], ncol[1][2],
-                y0, y1, 4, ((blockX    ) & 7) / 8.0, ((blockZ + 5) & 7) / 8.0);
+                               y0, y1, 4, ((blockX)&7) / 8.0, ((blockZ + 5) & 7) / 8.0);
         h10 = getSurfaceHeight(ncol[0][0], ncol[0][1], ncol[1][0], ncol[1][1],
-                y0, y1, 4, ((blockX - 5) & 7) / 8.0, ((blockZ    ) & 7) / 8.0);
+                               y0, y1, 4, ((blockX - 5) & 7) / 8.0, ((blockZ)&7) / 8.0);
         h11 = getSurfaceHeight(ncol[0][1], ncol[0][2], ncol[1][1], ncol[1][2],
-                y0, y1, 4, ((blockX - 5) & 7) / 8.0, ((blockZ + 5) & 7) / 8.0);
+                               y0, y1, 4, ((blockX - 5) & 7) / 8.0, ((blockZ + 5) & 7) / 8.0);
         break;
 
     case 2: // (--) 180
         h01 = getSurfaceHeight(ncol[0][0], ncol[0][1], ncol[1][0], ncol[1][1],
-                y0, y1, 4, ((blockX    ) & 7) / 8.0, ((blockZ - 5) & 7) / 8.0);
+                               y0, y1, 4, ((blockX)&7) / 8.0, ((blockZ - 5) & 7) / 8.0);
         h10 = getSurfaceHeight(ncol[0][0], ncol[0][1], ncol[1][0], ncol[1][1],
-                y0, y1, 4, ((blockX - 5) & 7) / 8.0, ((blockZ    ) & 7) / 8.0);
+                               y0, y1, 4, ((blockX - 5) & 7) / 8.0, ((blockZ)&7) / 8.0);
         h11 = getSurfaceHeight(ncol[0][0], ncol[0][1], ncol[1][0], ncol[1][1],
-                y0, y1, 4, ((blockX - 5) & 7) / 8.0, ((blockZ - 5) & 7) / 8.0);
+                               y0, y1, 4, ((blockX - 5) & 7) / 8.0, ((blockZ - 5) & 7) / 8.0);
         break;
 
     case 3: // (+-) 270
-        sampleNoiseColumnEnd(ncol[2][0], sn, en, cellx+2, cellz+0, y0, y1);
-        sampleNoiseColumnEnd(ncol[2][1], sn, en, cellx+2, cellz+1, y0, y1);
+        sampleNoiseColumnEnd(ncol[2][0], sn, en, cellx + 2, cellz + 0, y0, y1);
+        sampleNoiseColumnEnd(ncol[2][1], sn, en, cellx + 2, cellz + 1, y0, y1);
         h01 = getSurfaceHeight(ncol[0][0], ncol[0][1], ncol[1][0], ncol[1][1],
-                y0, y1, 4, ((blockX    ) & 7) / 8.0, ((blockZ - 5) & 7) / 8.0);
+                               y0, y1, 4, ((blockX)&7) / 8.0, ((blockZ - 5) & 7) / 8.0);
         h10 = getSurfaceHeight(ncol[1][0], ncol[1][1], ncol[2][0], ncol[2][1],
-                y0, y1, 4, ((blockX + 5) & 7) / 8.0, ((blockZ    ) & 7) / 8.0);
+                               y0, y1, 4, ((blockX + 5) & 7) / 8.0, ((blockZ)&7) / 8.0);
         h11 = getSurfaceHeight(ncol[1][0], ncol[1][1], ncol[2][0], ncol[2][1],
-                y0, y1, 4, ((blockX + 5) & 7) / 8.0, ((blockZ - 5) & 7) / 8.0);
+                               y0, y1, 4, ((blockX + 5) & 7) / 8.0, ((blockZ - 5) & 7) / 8.0);
         break;
 
     default:
         return 0; // error
     }
     //printf("%d %d %d %d\n", h00, h01, h10, h11);
-    if (h01 < h00) h00 = h01;
-    if (h10 < h00) h00 = h10;
-    if (h11 < h00) h00 = h11;
+    if (h01 < h00)
+        h00 = h01;
+    if (h10 < h00)
+        h00 = h10;
+    if (h11 < h00)
+        h00 = h11;
     return h00 >= 60;
 }
-
 
 //==============================================================================
 // Finding Properties of Structures
 //==============================================================================
 
-
 VillageType getVillageType(int mc, uint64_t seed, int blockX, int blockZ, int biomeID)
 {
-    VillageType r = { 0, 0, 0 };
+    VillageType r = {0, 0, 0};
     if (!isViableFeatureBiome(mc, Village, biomeID))
         return r;
 
@@ -2064,50 +2147,162 @@ VillageType getVillageType(int mc, uint64_t seed, int blockX, int blockZ, int bi
         {
         case plains:
             t = nextInt(&rnd, 204);
-            if      (t <  50) { r.variant = 0; } // plains_fountain_01
-            else if (t < 100) { r.variant = 1; } // plains_meeting_point_1
-            else if (t < 150) { r.variant = 2; } // plains_meeting_point_2
-            else if (t < 200) { r.variant = 3; } // plains_meeting_point_3
-            else if (t < 201) { r.variant = 0; r.abandoned = 1; }
-            else if (t < 202) { r.variant = 1; r.abandoned = 1; }
-            else if (t < 203) { r.variant = 2; r.abandoned = 1; }
-            else if (t < 204) { r.variant = 3; r.abandoned = 1; }
+            if (t < 50)
+            {
+                r.variant = 0;
+            } // plains_fountain_01
+            else if (t < 100)
+            {
+                r.variant = 1;
+            } // plains_meeting_point_1
+            else if (t < 150)
+            {
+                r.variant = 2;
+            } // plains_meeting_point_2
+            else if (t < 200)
+            {
+                r.variant = 3;
+            } // plains_meeting_point_3
+            else if (t < 201)
+            {
+                r.variant = 0;
+                r.abandoned = 1;
+            }
+            else if (t < 202)
+            {
+                r.variant = 1;
+                r.abandoned = 1;
+            }
+            else if (t < 203)
+            {
+                r.variant = 2;
+                r.abandoned = 1;
+            }
+            else if (t < 204)
+            {
+                r.variant = 3;
+                r.abandoned = 1;
+            }
             break;
         case desert:
             t = nextInt(&rnd, 250);
-            if      (t <  98) { r.variant = 1; } // desert_meeting_point_1
-            else if (t < 196) { r.variant = 2; } // desert_meeting_point_2
-            else if (t < 245) { r.variant = 3; } // desert_meeting_point_3
-            else if (t < 247) { r.variant = 1; r.abandoned = 1; }
-            else if (t < 249) { r.variant = 2; r.abandoned = 1; }
-            else if (t < 250) { r.variant = 3; r.abandoned = 1; }
+            if (t < 98)
+            {
+                r.variant = 1;
+            } // desert_meeting_point_1
+            else if (t < 196)
+            {
+                r.variant = 2;
+            } // desert_meeting_point_2
+            else if (t < 245)
+            {
+                r.variant = 3;
+            } // desert_meeting_point_3
+            else if (t < 247)
+            {
+                r.variant = 1;
+                r.abandoned = 1;
+            }
+            else if (t < 249)
+            {
+                r.variant = 2;
+                r.abandoned = 1;
+            }
+            else if (t < 250)
+            {
+                r.variant = 3;
+                r.abandoned = 1;
+            }
             break;
         case savanna:
             t = nextInt(&rnd, 459);
-            if      (t < 100) { r.variant = 1; } // savanna_meeting_point_1
-            else if (t < 150) { r.variant = 2; } // savanna_meeting_point_2
-            else if (t < 300) { r.variant = 3; } // savanna_meeting_point_3
-            else if (t < 450) { r.variant = 4; } // savanna_meeting_point_4
-            else if (t < 452) { r.variant = 1; r.abandoned = 1; }
-            else if (t < 453) { r.variant = 2; r.abandoned = 1; }
-            else if (t < 456) { r.variant = 3; r.abandoned = 1; }
-            else if (t < 459) { r.variant = 4; r.abandoned = 1; }
+            if (t < 100)
+            {
+                r.variant = 1;
+            } // savanna_meeting_point_1
+            else if (t < 150)
+            {
+                r.variant = 2;
+            } // savanna_meeting_point_2
+            else if (t < 300)
+            {
+                r.variant = 3;
+            } // savanna_meeting_point_3
+            else if (t < 450)
+            {
+                r.variant = 4;
+            } // savanna_meeting_point_4
+            else if (t < 452)
+            {
+                r.variant = 1;
+                r.abandoned = 1;
+            }
+            else if (t < 453)
+            {
+                r.variant = 2;
+                r.abandoned = 1;
+            }
+            else if (t < 456)
+            {
+                r.variant = 3;
+                r.abandoned = 1;
+            }
+            else if (t < 459)
+            {
+                r.variant = 4;
+                r.abandoned = 1;
+            }
             break;
         case taiga:
             t = nextInt(&rnd, 100);
-            if      (t <  49) { r.variant = 1; } // taiga_meeting_point_1
-            else if (t <  98) { r.variant = 2; } // taiga_meeting_point_2
-            else if (t <  99) { r.variant = 1; r.abandoned = 1; }
-            else if (t < 100) { r.variant = 2; r.abandoned = 1; }
+            if (t < 49)
+            {
+                r.variant = 1;
+            } // taiga_meeting_point_1
+            else if (t < 98)
+            {
+                r.variant = 2;
+            } // taiga_meeting_point_2
+            else if (t < 99)
+            {
+                r.variant = 1;
+                r.abandoned = 1;
+            }
+            else if (t < 100)
+            {
+                r.variant = 2;
+                r.abandoned = 1;
+            }
             break;
         case snowy_tundra:
             t = nextInt(&rnd, 306);
-            if      (t < 100) { r.variant = 1; } // snowy_meeting_point_1
-            else if (t < 150) { r.variant = 2; } // snowy_meeting_point_2
-            else if (t < 300) { r.variant = 3; } // snowy_meeting_point_3
-            else if (t < 302) { r.variant = 1; r.abandoned = 1; }
-            else if (t < 303) { r.variant = 2; r.abandoned = 1; }
-            else if (t < 306) { r.variant = 3; r.abandoned = 1; }
+            if (t < 100)
+            {
+                r.variant = 1;
+            } // snowy_meeting_point_1
+            else if (t < 150)
+            {
+                r.variant = 2;
+            } // snowy_meeting_point_2
+            else if (t < 300)
+            {
+                r.variant = 3;
+            } // snowy_meeting_point_3
+            else if (t < 302)
+            {
+                r.variant = 1;
+                r.abandoned = 1;
+            }
+            else if (t < 303)
+            {
+                r.variant = 2;
+                r.abandoned = 1;
+            }
+            else if (t < 306)
+            {
+                r.variant = 3;
+                r.abandoned = 1;
+            }
             break;
         default:
             break;
@@ -2122,20 +2317,19 @@ VillageType getVillageType(int mc, uint64_t seed, int blockX, int blockZ, int bi
     return r;
 }
 
-
 uint64_t getHouseList(uint64_t worldSeed, int chunkX, int chunkZ,
-        int *out)
+                      int *out)
 {
     uint64_t rnd = chunkGenerateRnd(worldSeed, chunkX, chunkZ);
     skipNextN(&rnd, 1);
 
     out[HouseSmall] = nextInt(&rnd, 4 - 2 + 1) + 2;
-    out[Church]     = nextInt(&rnd, 1 - 0 + 1) + 0;
-    out[Library]    = nextInt(&rnd, 2 - 0 + 1) + 0;
-    out[WoodHut]    = nextInt(&rnd, 5 - 2 + 1) + 2;
-    out[Butcher]    = nextInt(&rnd, 2 - 0 + 1) + 0;
-    out[FarmLarge]  = nextInt(&rnd, 4 - 1 + 1) + 1;
-    out[FarmSmall]  = nextInt(&rnd, 4 - 2 + 1) + 2;
+    out[Church] = nextInt(&rnd, 1 - 0 + 1) + 0;
+    out[Library] = nextInt(&rnd, 2 - 0 + 1) + 0;
+    out[WoodHut] = nextInt(&rnd, 5 - 2 + 1) + 2;
+    out[Butcher] = nextInt(&rnd, 2 - 0 + 1) + 0;
+    out[FarmLarge] = nextInt(&rnd, 4 - 1 + 1) + 1;
+    out[FarmSmall] = nextInt(&rnd, 4 - 2 + 1) + 2;
     out[Blacksmith] = nextInt(&rnd, 1 - 0 + 1) + 0;
     out[HouseLarge] = nextInt(&rnd, 3 - 0 + 1) + 0;
 
@@ -2145,7 +2339,6 @@ uint64_t getHouseList(uint64_t worldSeed, int chunkX, int chunkZ,
 //==============================================================================
 // Seed Filters
 //==============================================================================
-
 
 BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
 {
@@ -2181,17 +2374,20 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
         case eroded_badlands:
         case modified_badlands_plateau:
         case modified_wooded_badlands_plateau:
-            bf.tempsToFind |= (1ULL << (Warm+Special));
+            bf.tempsToFind |= (1ULL << (Warm + Special));
             if (id == badlands_plateau || id == modified_badlands_plateau)
                 bf.majorToFind |= (1ULL << badlands_plateau);
             if (id == wooded_badlands_plateau || id == modified_wooded_badlands_plateau)
                 bf.majorToFind |= (1ULL << wooded_badlands_plateau);
-            if (id < 128) {
+            if (id < 128)
+            {
                 bf.raresToFind |= (1ULL << id);
                 bf.riverToFind |= (1ULL << id);
-            } else {
-                bf.raresToFindM |= (1ULL << (id-128));
-                bf.riverToFindM |= (1ULL << (id-128));
+            }
+            else
+            {
+                bf.raresToFindM |= (1ULL << (id - 128));
+                bf.riverToFindM |= (1ULL << (id - 128));
             }
             break;
 
@@ -2202,27 +2398,35 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
         case modified_jungle_edge:
         case bamboo_jungle:
         case bamboo_jungle_hills:
-            bf.tempsToFind |= (1ULL << (Lush+Special));
+            bf.tempsToFind |= (1ULL << (Lush + Special));
             bf.majorToFind |= (1ULL << jungle);
-            if (id == bamboo_jungle || id == bamboo_jungle_hills) {
+            if (id == bamboo_jungle || id == bamboo_jungle_hills)
+            {
                 // bamboo%64 are End biomes, so we can reuse the edgesToFind
                 bf.edgesToFind |= (1ULL << (bamboo_jungle & 0x3f));
-                bf.raresToFindM |= (1ULL << (id-128));
-                bf.riverToFindM |= (1ULL << (id-128));
-            } else if (id == jungle_edge) {
+                bf.raresToFindM |= (1ULL << (id - 128));
+                bf.riverToFindM |= (1ULL << (id - 128));
+            }
+            else if (id == jungle_edge)
+            {
                 // un-modified jungle_edge can be created at shore layer
                 bf.riverToFind |= (1ULL << jungle_edge);
-            } else {
+            }
+            else
+            {
                 if (id == modified_jungle_edge)
                     bf.edgesToFind |= (1ULL << jungle_edge);
                 else
                     bf.edgesToFind |= (1ULL << jungle);
-                if (id < 128) {
+                if (id < 128)
+                {
                     bf.raresToFind |= (1ULL << id);
                     bf.riverToFind |= (1ULL << id);
-                } else {
-                    bf.raresToFindM |= (1ULL << (id-128));
-                    bf.riverToFindM |= (1ULL << (id-128));
+                }
+                else
+                {
+                    bf.raresToFindM |= (1ULL << (id - 128));
+                    bf.riverToFindM |= (1ULL << (id - 128));
                 }
             }
             break;
@@ -2231,15 +2435,18 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
         case giant_tree_taiga_hills:
         case giant_spruce_taiga:
         case giant_spruce_taiga_hills:
-            bf.tempsToFind |= (1ULL << (Cold+Special));
+            bf.tempsToFind |= (1ULL << (Cold + Special));
             bf.majorToFind |= (1ULL << giant_tree_taiga);
             bf.edgesToFind |= (1ULL << giant_tree_taiga);
-            if (id < 128) {
+            if (id < 128)
+            {
                 bf.raresToFind |= (1ULL << id);
                 bf.riverToFind |= (1ULL << id);
-            } else {
-                bf.raresToFindM |= (1ULL << (id-128));
-                bf.riverToFindM |= (1ULL << (id-128));
+            }
+            else
+            {
+                bf.raresToFindM |= (1ULL << (id - 128));
+                bf.riverToFindM |= (1ULL << (id - 128));
             }
             break;
 
@@ -2250,19 +2457,25 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
         case desert_hills:
         case desert_lakes:
             bf.tempsToFind |= (1ULL << Warm);
-            if (id == desert_hills || id == desert_lakes) {
+            if (id == desert_hills || id == desert_lakes)
+            {
                 bf.majorToFind |= (1ULL << desert);
                 bf.edgesToFind |= (1ULL << desert);
-            } else {
+            }
+            else
+            {
                 bf.majorToFind |= (1ULL << savanna);
                 bf.edgesToFind |= (1ULL << savanna);
             }
-            if (id < 128) {
+            if (id < 128)
+            {
                 bf.raresToFind |= (1ULL << id);
                 bf.riverToFind |= (1ULL << id);
-            } else {
-                bf.raresToFindM |= (1ULL << (id-128));
-                bf.riverToFindM |= (1ULL << (id-128));
+            }
+            else
+            {
+                bf.raresToFindM |= (1ULL << (id - 128));
+                bf.riverToFindM |= (1ULL << (id - 128));
             }
             break;
 
@@ -2275,25 +2488,31 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
         case swamp:
         case swamp_hills:
             bf.tempsToFind |= (1ULL << Lush);
-            if (id == dark_forest || id == dark_forest_hills) {
+            if (id == dark_forest || id == dark_forest_hills)
+            {
                 bf.majorToFind |= (1ULL << dark_forest);
                 bf.edgesToFind |= (1ULL << dark_forest);
             }
             else if (id == birch_forest || id == birch_forest_hills ||
-                     id == tall_birch_forest || id == tall_birch_hills) {
+                     id == tall_birch_forest || id == tall_birch_hills)
+            {
                 bf.majorToFind |= (1ULL << birch_forest);
                 bf.edgesToFind |= (1ULL << birch_forest);
             }
-            else if (id == swamp || id == swamp_hills) {
+            else if (id == swamp || id == swamp_hills)
+            {
                 bf.majorToFind |= (1ULL << swamp);
                 bf.edgesToFind |= (1ULL << swamp);
             }
-            if (id < 128) {
+            if (id < 128)
+            {
                 bf.raresToFind |= (1ULL << id);
                 bf.riverToFind |= (1ULL << id);
-            } else {
-                bf.raresToFindM |= (1ULL << (id-128));
-                bf.riverToFindM |= (1ULL << (id-128));
+            }
+            else
+            {
+                bf.raresToFindM |= (1ULL << (id - 128));
+                bf.riverToFindM |= (1ULL << (id - 128));
             }
             break;
 
@@ -2310,21 +2529,26 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
                 bf.edgesToFind |= (1ULL << snowy_taiga);
             else
                 bf.edgesToFind |= (1ULL << snowy_tundra);
-            if (id == frozen_river) {
+            if (id == frozen_river)
+            {
                 bf.raresToFind |= (1ULL << snowy_tundra);
                 bf.riverToFind |= (1ULL << id);
-            } else if (id < 128) {
+            }
+            else if (id < 128)
+            {
                 bf.raresToFind |= (1ULL << id);
                 bf.riverToFind |= (1ULL << id);
-            } else {
-                bf.raresToFindM |= (1ULL << (id-128));
-                bf.riverToFindM |= (1ULL << (id-128));
+            }
+            else
+            {
+                bf.raresToFindM |= (1ULL << (id - 128));
+                bf.riverToFindM |= (1ULL << (id - 128));
             }
             break;
 
         case sunflower_plains:
-            bf.raresToFindM |= (1ULL << (id-128));
-            bf.riverToFindM |= (1ULL << (id-128));
+            bf.raresToFindM |= (1ULL << (id - 128));
+            bf.riverToFindM |= (1ULL << (id - 128));
             break;
 
         case snowy_beach:
@@ -2346,8 +2570,8 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
             bf.majorToFind |= (1ULL << mountains);
             // fall through
         case modified_gravelly_mountains:
-            bf.raresToFindM |= (1ULL << (id-128));
-            bf.riverToFindM |= (1ULL << (id-128));
+            bf.raresToFindM |= (1ULL << (id - 128));
+            bf.riverToFindM |= (1ULL << (id - 128));
             break;
 
         case taiga:
@@ -2358,8 +2582,8 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
             break;
         case taiga_mountains:
             bf.edgesToFind |= (1ULL << taiga);
-            bf.raresToFindM |= (1ULL << (id-128));
-            bf.riverToFindM |= (1ULL << (id-128));
+            bf.raresToFindM |= (1ULL << (id - 128));
+            bf.riverToFindM |= (1ULL << (id - 128));
             break;
 
         case plains:
@@ -2369,8 +2593,8 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
             bf.riverToFind |= (1ULL << id);
             break;
         case flower_forest:
-            bf.raresToFindM |= (1ULL << (id-128));
-            bf.riverToFindM |= (1ULL << (id-128));
+            bf.raresToFindM |= (1ULL << (id - 128));
+            bf.riverToFindM |= (1ULL << (id - 128));
             break;
 
         case desert: // can generate at shore layer
@@ -2378,13 +2602,17 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
             break;
 
         default:
-            if (isOceanic(id)) {
+            if (isOceanic(id))
+            {
                 bf.tempsToFind |= (1ULL << Oceanic);
                 bf.oceanToFind |= (1ULL << id);
-                if (isShallowOcean(id)) {
+                if (isShallowOcean(id))
+                {
                     if (id != lukewarm_ocean && id != cold_ocean)
                         bf.otempToFind |= (1ULL << id);
-                } else {
+                }
+                else
+                {
                     bf.raresToFind |= (1ULL << deep_ocean);
                     bf.riverToFind |= (1ULL << deep_ocean);
                     if (id == deep_warm_ocean)
@@ -2394,11 +2622,13 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
                     else if (id == deep_frozen_ocean)
                         bf.otempToFind |= (1ULL << frozen_ocean);
                 }
-            } else {
+            }
+            else
+            {
                 if (id < 64)
                     bf.riverToFind |= (1ULL << id);
                 else
-                    bf.riverToFindM |= (1ULL << (id-128));
+                    bf.riverToFindM |= (1ULL << (id - 128));
             }
             break;
         }
@@ -2409,13 +2639,12 @@ BiomeFilter setupBiomeFilter(const int *biomeList, int listLen)
     bf.shoreToFindM = bf.riverToFindM;
 
     bf.specialCnt = 0;
-    bf.specialCnt += !!(bf.tempsToFind & (1ULL << (Warm+Special)));
-    bf.specialCnt += !!(bf.tempsToFind & (1ULL << (Lush+Special)));
-    bf.specialCnt += !!(bf.tempsToFind & (1ULL << (Cold+Special)));
+    bf.specialCnt += !!(bf.tempsToFind & (1ULL << (Warm + Special)));
+    bf.specialCnt += !!(bf.tempsToFind & (1ULL << (Lush + Special)));
+    bf.specialCnt += !!(bf.tempsToFind & (1ULL << (Cold + Special)));
 
     return bf;
 }
-
 
 STRUCT(filter_data_t)
 {
@@ -2423,9 +2652,9 @@ STRUCT(filter_data_t)
     int (*map)(const Layer *, int *, int, int, int, int);
 };
 
-static int mapFilterSpecial(const Layer * l, int * out, int x, int z, int w, int h)
+static int mapFilterSpecial(const Layer *l, int *out, int x, int z, int w, int h)
 {
-    const filter_data_t *f = (const filter_data_t*) l->data;
+    const filter_data_t *f = (const filter_data_t *)l->data;
     int i, j;
     uint64_t temps;
 
@@ -2440,7 +2669,7 @@ static int mapFilterSpecial(const Layer * l, int * out, int x, int z, int w, int
         {
             for (i = 0; i < w; i++)
             {
-                cs = getChunkSeed(ss, x+i, z+j);
+                cs = getChunkSeed(ss, x + i, z + j);
                 if (mcFirstIsZero(cs, 13))
                     specialcnt--;
             }
@@ -2450,7 +2679,7 @@ static int mapFilterSpecial(const Layer * l, int * out, int x, int z, int w, int
     }
 
     int err = f->map(l, out, x, z, w, h);
-    if U(err != 0)
+    if U (err != 0)
         return err;
 
     temps = 0;
@@ -2459,13 +2688,13 @@ static int mapFilterSpecial(const Layer * l, int * out, int x, int z, int w, int
     {
         for (i = 0; i < w; i++)
         {
-            int id = out[i + w*j];
+            int id = out[i + w * j];
             int isspecial = id & 0xf00;
             id &= ~0xf00;
             if (isspecial && id != Freezing)
-               temps |= (1ULL << (id+Special));
+                temps |= (1ULL << (id + Special));
             else
-               temps |= (1ULL << id);
+                temps |= (1ULL << id);
         }
     }
 
@@ -2474,13 +2703,13 @@ static int mapFilterSpecial(const Layer * l, int * out, int x, int z, int w, int
     return 0;
 }
 
-static int mapFilterMushroom(const Layer * l, int * out, int x, int z, int w, int h)
+static int mapFilterMushroom(const Layer *l, int *out, int x, int z, int w, int h)
 {
-    const filter_data_t *f = (const filter_data_t*) l->data;
+    const filter_data_t *f = (const filter_data_t *)l->data;
     int i, j;
     int err;
 
-    if (w*h < 100 && (f->bf->majorToFind & (1ULL << mushroom_fields)))
+    if (w * h < 100 && (f->bf->majorToFind & (1ULL << mushroom_fields)))
     {
         uint64_t ss = l->startSeed;
         uint64_t cs;
@@ -2489,7 +2718,7 @@ static int mapFilterMushroom(const Layer * l, int * out, int x, int z, int w, in
         {
             for (i = 0; i < w; i++)
             {
-                cs = getChunkSeed(ss, i+x, j+z);
+                cs = getChunkSeed(ss, i + x, j + z);
                 if (mcFirstIsZero(cs, 100))
                     goto L_GENERATE;
             }
@@ -2499,12 +2728,12 @@ static int mapFilterMushroom(const Layer * l, int * out, int x, int z, int w, in
 
 L_GENERATE:
     err = f->map(l, out, x, z, w, h);
-    if U(err != 0)
+    if U (err != 0)
         return err;
 
     if (f->bf->majorToFind & (1ULL << mushroom_fields))
     {
-        for (i = 0; i < w*h; i++)
+        for (i = 0; i < w * h; i++)
             if (out[i] == mushroom_fields)
                 return 0;
         return 1;
@@ -2512,14 +2741,14 @@ L_GENERATE:
     return 0;
 }
 
-static int mapFilterBiome(const Layer * l, int * out, int x, int z, int w, int h)
+static int mapFilterBiome(const Layer *l, int *out, int x, int z, int w, int h)
 {
-    const filter_data_t *f = (const filter_data_t*) l->data;
+    const filter_data_t *f = (const filter_data_t *)l->data;
     int i, j;
     uint64_t b;
 
     int err = f->map(l, out, x, z, w, h);
-    if U(err != 0)
+    if U (err != 0)
         return err;
 
     b = 0;
@@ -2527,7 +2756,7 @@ static int mapFilterBiome(const Layer * l, int * out, int x, int z, int w, int h
     {
         for (i = 0; i < w; i++)
         {
-            int id = out[i + w*j];
+            int id = out[i + w * j];
             b |= (1ULL << id);
         }
     }
@@ -2537,14 +2766,14 @@ static int mapFilterBiome(const Layer * l, int * out, int x, int z, int w, int h
     return 0;
 }
 
-static int mapFilterOceanTemp(const Layer * l, int * out, int x, int z, int w, int h)
+static int mapFilterOceanTemp(const Layer *l, int *out, int x, int z, int w, int h)
 {
-    const filter_data_t *f = (const filter_data_t*) l->data;
+    const filter_data_t *f = (const filter_data_t *)l->data;
     int i, j;
     uint64_t b;
 
     int err = f->map(l, out, x, z, w, h);
-    if U(err != 0)
+    if U (err != 0)
         return err;
 
     b = 0;
@@ -2552,7 +2781,7 @@ static int mapFilterOceanTemp(const Layer * l, int * out, int x, int z, int w, i
     {
         for (i = 0; i < w; i++)
         {
-            int id = out[i + w*j];
+            int id = out[i + w * j];
             b |= (1ULL << id);
         }
     }
@@ -2562,19 +2791,19 @@ static int mapFilterOceanTemp(const Layer * l, int * out, int x, int z, int w, i
     return 0;
 }
 
-static int mapFilterBiomeEdge(const Layer * l, int * out, int x, int z, int w, int h)
+static int mapFilterBiomeEdge(const Layer *l, int *out, int x, int z, int w, int h)
 {
-    const filter_data_t *f = (const filter_data_t*) l->data;
+    const filter_data_t *f = (const filter_data_t *)l->data;
     uint64_t b;
     int i;
     int err;
 
     err = f->map(l, out, x, z, w, h);
-    if U(err != 0)
+    if U (err != 0)
         return err;
 
     b = 0;
-    for (i = 0; i < w*h; i++)
+    for (i = 0; i < w * h; i++)
         b |= (1ULL << (out[i] & 0x3f));
 
     if ((b & f->bf->edgesToFind) ^ f->bf->edgesToFind)
@@ -2582,23 +2811,26 @@ static int mapFilterBiomeEdge(const Layer * l, int * out, int x, int z, int w, i
     return 0;
 }
 
-static int mapFilterRareBiome(const Layer * l, int * out, int x, int z, int w, int h)
+static int mapFilterRareBiome(const Layer *l, int *out, int x, int z, int w, int h)
 {
-    const filter_data_t *f = (const filter_data_t*) l->data;
+    const filter_data_t *f = (const filter_data_t *)l->data;
     uint64_t b, bm;
     int i;
     int err;
 
     err = f->map(l, out, x, z, w, h);
-    if U(err != 0)
+    if U (err != 0)
         return err;
 
-    b = 0; bm = 0;
-    for (i = 0; i < w*h; i++)
+    b = 0;
+    bm = 0;
+    for (i = 0; i < w * h; i++)
     {
         int id = out[i];
-        if (id < 128) b |= (1ULL << id);
-        else bm |= (1ULL << (id-128));
+        if (id < 128)
+            b |= (1ULL << id);
+        else
+            bm |= (1ULL << (id - 128));
     }
 
     if ((b & f->bf->raresToFind) ^ f->bf->raresToFind)
@@ -2608,22 +2840,25 @@ static int mapFilterRareBiome(const Layer * l, int * out, int x, int z, int w, i
     return 0;
 }
 
-static int mapFilterShore(const Layer * l, int * out, int x, int z, int w, int h)
+static int mapFilterShore(const Layer *l, int *out, int x, int z, int w, int h)
 {
-    const filter_data_t *f = (const filter_data_t*) l->data;
+    const filter_data_t *f = (const filter_data_t *)l->data;
     uint64_t b, bm;
     int i;
 
     int err = f->map(l, out, x, z, w, h);
-    if U(err != 0)
+    if U (err != 0)
         return err;
 
-    b = 0; bm = 0;
-    for (i = 0; i < w*h; i++)
+    b = 0;
+    bm = 0;
+    for (i = 0; i < w * h; i++)
     {
         int id = out[i];
-        if (id < 128) b |= (1ULL << id);
-        else bm |= (1ULL << (id-128));
+        if (id < 128)
+            b |= (1ULL << id);
+        else
+            bm |= (1ULL << (id - 128));
     }
 
     if ((b & f->bf->shoreToFind) ^ f->bf->shoreToFind)
@@ -2633,22 +2868,25 @@ static int mapFilterShore(const Layer * l, int * out, int x, int z, int w, int h
     return 0;
 }
 
-static int mapFilterRiverMix(const Layer * l, int * out, int x, int z, int w, int h)
+static int mapFilterRiverMix(const Layer *l, int *out, int x, int z, int w, int h)
 {
-    const filter_data_t *f = (const filter_data_t*) l->data;
+    const filter_data_t *f = (const filter_data_t *)l->data;
     uint64_t b, bm;
     int i;
 
     int err = f->map(l, out, x, z, w, h);
-    if U(err != 0)
+    if U (err != 0)
         return err;
 
-    b = 0; bm = 0;
-    for (i = 0; i < w*h; i++)
+    b = 0;
+    bm = 0;
+    for (i = 0; i < w * h; i++)
     {
         int id = out[i];
-        if (id < 128) b |= (1ULL << id);
-        else bm |= (1ULL << (id-128));
+        if (id < 128)
+            b |= (1ULL << id);
+        else
+            bm |= (1ULL << (id - 128));
     }
 
     if ((b & f->bf->riverToFind) ^ f->bf->riverToFind)
@@ -2658,9 +2896,9 @@ static int mapFilterRiverMix(const Layer * l, int * out, int x, int z, int w, in
     return 0;
 }
 
-static int mapFilterOceanMix(const Layer * l, int * out, int x, int z, int w, int h)
+static int mapFilterOceanMix(const Layer *l, int *out, int x, int z, int w, int h)
 {
-    const filter_data_t *f = (const filter_data_t*) l->data;
+    const filter_data_t *f = (const filter_data_t *)l->data;
     uint64_t b;
     int i;
     int err;
@@ -2673,14 +2911,15 @@ static int mapFilterOceanMix(const Layer * l, int * out, int x, int z, int w, in
     }
 
     err = f->map(l, out, x, z, w, h);
-    if U(err != 0)
+    if U (err != 0)
         return err;
 
     b = 0;
-    for (i = 0; i < w*h; i++)
+    for (i = 0; i < w * h; i++)
     {
         int id = out[i];
-        if (id < 128) b |= (1ULL << id);
+        if (id < 128)
+            b |= (1ULL << id);
     }
 
     if ((b & f->bf->oceanToFind) ^ f->bf->oceanToFind)
@@ -2689,11 +2928,11 @@ static int mapFilterOceanMix(const Layer * l, int * out, int x, int z, int w, in
 }
 
 void swapMap(filter_data_t *fd, BiomeFilter *bf, Layer *l,
-        int (*map)(const Layer *, int *, int, int, int, int))
+             int (*map)(const Layer *, int *, int, int, int, int))
 {
     fd->bf = bf;
     fd->map = l->getMap;
-    l->data = (void*) fd;
+    l->data = (void *)fd;
     l->getMap = map;
 }
 
@@ -2703,19 +2942,17 @@ void restoreMap(filter_data_t *fd, Layer *l)
     l->data = NULL;
 }
 
-
 int checkForBiomes(
-        LayerStack *    g,
-        int             layerID,
-        int *           cache,
-        uint64_t        seed,
-        int             x,
-        int             z,
-        unsigned int    w,
-        unsigned int    h,
-        BiomeFilter     filter,
-        int             protoCheck
-        )
+    LayerStack *g,
+    int layerID,
+    int *cache,
+    uint64_t seed,
+    int x,
+    int z,
+    unsigned int w,
+    unsigned int h,
+    BiomeFilter filter,
+    int protoCheck)
 {
     Layer *l;
 
@@ -2736,10 +2973,18 @@ int checkForBiomes(
         if (specialcnt > 0)
         {
             l = &g->layers[L_SPECIAL_1024];
-            x0 = (bx) / l->scale; if (x < 0) x0--;
-            z0 = (bz) / l->scale; if (z < 0) z0--;
-            x1 = (bx + bw) / l->scale; if (x+(int)w >= 0) x1++;
-            z1 = (bz + bh) / l->scale; if (z+(int)h >= 0) z1++;
+            x0 = (bx) / l->scale;
+            if (x < 0)
+                x0--;
+            z0 = (bz) / l->scale;
+            if (z < 0)
+                z0--;
+            x1 = (bx + bw) / l->scale;
+            if (x + (int)w >= 0)
+                x1++;
+            z1 = (bz + bh) / l->scale;
+            if (z + (int)h >= 0)
+                z1++;
             ss = getStartSeed(seed, l->layerSalt);
 
             for (j = z0; j <= z1; j++)
@@ -2756,10 +3001,18 @@ int checkForBiomes(
         }
 
         l = &g->layers[L_BIOME_256];
-        x0 = bx / l->scale; if (x < 0) x0--;
-        z0 = bz / l->scale; if (z < 0) z0--;
-        x1 = (bx + bw) / l->scale; if (x+(int)w >= 0) x1++;
-        z1 = (bz + bh) / l->scale; if (z+(int)h >= 0) z1++;
+        x0 = bx / l->scale;
+        if (x < 0)
+            x0--;
+        z0 = bz / l->scale;
+        if (z < 0)
+            z0--;
+        x1 = (bx + bw) / l->scale;
+        if (x + (int)w >= 0)
+            x1++;
+        z1 = (bz + bh) / l->scale;
+        if (z + (int)h >= 0)
+            z1++;
 
         if (filter.majorToFind & (1ULL << mushroom_fields))
         {
@@ -2776,14 +3029,13 @@ int checkForBiomes(
             }
             return 0;
         }
-L_HAS_PROTO_MUSHROOM:
+    L_HAS_PROTO_MUSHROOM:
 
         potential = 0;
-        required = filter.majorToFind & (
-                (1ULL << badlands_plateau) | (1ULL << wooded_badlands_plateau) |
-                (1ULL << desert) | (1ULL << savanna) | (1ULL << plains) |
-                (1ULL << forest) | (1ULL << dark_forest) | (1ULL << mountains) |
-                (1ULL << birch_forest) | (1ULL << swamp));
+        required = filter.majorToFind & ((1ULL << badlands_plateau) | (1ULL << wooded_badlands_plateau) |
+                                         (1ULL << desert) | (1ULL << savanna) | (1ULL << plains) |
+                                         (1ULL << forest) | (1ULL << dark_forest) | (1ULL << mountains) |
+                                         (1ULL << birch_forest) | (1ULL << swamp));
 
         ss = getStartSeed(seed, l->layerSalt);
 
@@ -2796,21 +3048,37 @@ L_HAS_PROTO_MUSHROOM:
                 int cs3 = mcFirstInt(cs, 3);
                 int cs4 = mcFirstInt(cs, 4);
 
-                if (cs3) potential |= (1ULL << badlands_plateau);
-                else potential |= (1ULL << wooded_badlands_plateau);
+                if (cs3)
+                    potential |= (1ULL << badlands_plateau);
+                else
+                    potential |= (1ULL << wooded_badlands_plateau);
 
                 switch (cs6)
                 {
-                case 0: potential |= (1ULL << desert) | (1ULL << forest); break;
-                case 1: potential |= (1ULL << desert) | (1ULL << dark_forest); break;
-                case 2: potential |= (1ULL << desert) | (1ULL << mountains); break;
-                case 3: potential |= (1ULL << savanna) | (1ULL << plains); break;
-                case 4: potential |= (1ULL << savanna) | (1ULL << birch_forest); break;
-                case 5: potential |= (1ULL << plains) | (1ULL << swamp); break;
+                case 0:
+                    potential |= (1ULL << desert) | (1ULL << forest);
+                    break;
+                case 1:
+                    potential |= (1ULL << desert) | (1ULL << dark_forest);
+                    break;
+                case 2:
+                    potential |= (1ULL << desert) | (1ULL << mountains);
+                    break;
+                case 3:
+                    potential |= (1ULL << savanna) | (1ULL << plains);
+                    break;
+                case 4:
+                    potential |= (1ULL << savanna) | (1ULL << birch_forest);
+                    break;
+                case 5:
+                    potential |= (1ULL << plains) | (1ULL << swamp);
+                    break;
                 }
 
-                if (cs4 == 3) potential |= (1ULL << snowy_taiga);
-                else potential |= (1ULL << snowy_tundra);
+                if (cs4 == 3)
+                    potential |= (1ULL << snowy_taiga);
+                else
+                    potential |= (1ULL << snowy_tundra);
             }
         }
 
@@ -2822,15 +3090,15 @@ L_HAS_PROTO_MUSHROOM:
     int *ids = cache ? cache : allocCache(&l[layerID], w, h);
 
     filter_data_t fd[9];
-    swapMap(fd+0, &filter, l+L_OCEAN_MIX_4,     mapFilterOceanMix);
-    swapMap(fd+1, &filter, l+L_RIVER_MIX_4,     mapFilterRiverMix);
-    swapMap(fd+2, &filter, l+L_SHORE_16,        mapFilterShore);
-    swapMap(fd+3, &filter, l+L_SUNFLOWER_64,    mapFilterRareBiome);
-    swapMap(fd+4, &filter, l+L_BIOME_EDGE_64,   mapFilterBiomeEdge);
-    swapMap(fd+5, &filter, l+L_OCEAN_TEMP_256,  mapFilterOceanTemp);
-    swapMap(fd+6, &filter, l+L_BIOME_256,       mapFilterBiome);
-    swapMap(fd+7, &filter, l+L_MUSHROOM_256,    mapFilterMushroom);
-    swapMap(fd+8, &filter, l+L_SPECIAL_1024,    mapFilterSpecial);
+    swapMap(fd + 0, &filter, l + L_OCEAN_MIX_4, mapFilterOceanMix);
+    swapMap(fd + 1, &filter, l + L_RIVER_MIX_4, mapFilterRiverMix);
+    swapMap(fd + 2, &filter, l + L_SHORE_16, mapFilterShore);
+    swapMap(fd + 3, &filter, l + L_SUNFLOWER_64, mapFilterRareBiome);
+    swapMap(fd + 4, &filter, l + L_BIOME_EDGE_64, mapFilterBiomeEdge);
+    swapMap(fd + 5, &filter, l + L_OCEAN_TEMP_256, mapFilterOceanTemp);
+    swapMap(fd + 6, &filter, l + L_BIOME_256, mapFilterBiome);
+    swapMap(fd + 7, &filter, l + L_MUSHROOM_256, mapFilterMushroom);
+    swapMap(fd + 8, &filter, l + L_SPECIAL_1024, mapFilterSpecial);
 
     setLayerSeed(&l[layerID], seed);
     int ret = !l[layerID].getMap(&l[layerID], ids, x, z, w, h);
@@ -2838,11 +3106,13 @@ L_HAS_PROTO_MUSHROOM:
     {
         uint64_t required, b = 0, bm = 0;
         unsigned int i;
-        for (i = 0; i < w*h; i++)
+        for (i = 0; i < w * h; i++)
         {
             int id = ids[i];
-            if (id < 128) b |= (1ULL << id);
-            else bm |= (1ULL << (id-128));
+            if (id < 128)
+                b |= (1ULL << id);
+            else
+                bm |= (1ULL << (id - 128));
         }
         required = filter.riverToFind;
         required &= ~((1ULL << ocean) | (1ULL << deep_ocean));
@@ -2854,22 +3124,21 @@ L_HAS_PROTO_MUSHROOM:
             ret = -1;
     }
 
-    restoreMap(fd+8, l+L_SPECIAL_1024);
-    restoreMap(fd+7, l+L_MUSHROOM_256);
-    restoreMap(fd+6, l+L_BIOME_256);
-    restoreMap(fd+5, l+L_OCEAN_TEMP_256);
-    restoreMap(fd+4, l+L_BIOME_EDGE_64);
-    restoreMap(fd+3, l+L_SUNFLOWER_64);
-    restoreMap(fd+2, l+L_SHORE_16);
-    restoreMap(fd+1, l+L_RIVER_MIX_4);
-    restoreMap(fd+0, l+L_OCEAN_MIX_4);
+    restoreMap(fd + 8, l + L_SPECIAL_1024);
+    restoreMap(fd + 7, l + L_MUSHROOM_256);
+    restoreMap(fd + 6, l + L_BIOME_256);
+    restoreMap(fd + 5, l + L_OCEAN_TEMP_256);
+    restoreMap(fd + 4, l + L_BIOME_EDGE_64);
+    restoreMap(fd + 3, l + L_SUNFLOWER_64);
+    restoreMap(fd + 2, l + L_SHORE_16);
+    restoreMap(fd + 1, l + L_RIVER_MIX_4);
+    restoreMap(fd + 0, l + L_OCEAN_MIX_4);
 
     if (cache == NULL)
         free(ids);
 
     return ret;
 }
-
 
 int checkForTemps(LayerStack *g, uint64_t seed, int x, int z, int w, int h, const int tc[9])
 {
@@ -2879,9 +3148,12 @@ int checkForTemps(LayerStack *g, uint64_t seed, int x, int z, int w, int h, cons
     int i, j;
     int scnt = 0;
 
-    if (tc[Special+Warm] > 0) scnt += tc[Special+Warm];
-    if (tc[Special+Lush] > 0) scnt += tc[Special+Lush];
-    if (tc[Special+Cold] > 0) scnt += tc[Special+Cold];
+    if (tc[Special + Warm] > 0)
+        scnt += tc[Special + Warm];
+    if (tc[Special + Lush] > 0)
+        scnt += tc[Special + Lush];
+    if (tc[Special + Cold] > 0)
+        scnt += tc[Special + Cold];
 
     if (scnt > 0)
     {
@@ -2889,7 +3161,7 @@ int checkForTemps(LayerStack *g, uint64_t seed, int x, int z, int w, int h, cons
         {
             for (i = 0; i < w; i++)
             {
-                if (mcFirstIsZero(getChunkSeed(ss, x+i, z+j), 13))
+                if (mcFirstIsZero(getChunkSeed(ss, x + i, z + j), 13))
                     scnt--;
             }
         }
@@ -2905,7 +3177,7 @@ int checkForTemps(LayerStack *g, uint64_t seed, int x, int z, int w, int h, cons
     setLayerSeed(l, seed);
     genArea(l, area, x, z, w, h);
 
-    for (i = 0; i < w*h; i++)
+    for (i = 0; i < w * h; i++)
     {
         int id = area[i];
         int t = id & 0xff;
@@ -2925,7 +3197,6 @@ int checkForTemps(LayerStack *g, uint64_t seed, int x, int z, int w, int h, cons
     free(area);
     return ret;
 }
-
 
 int canBiomeGenerate(int layerId, int mc, int id)
 {
@@ -3007,12 +3278,11 @@ int canBiomeGenerate(int layerId, int mc, int id)
     if (!dofilter && layerId != L_VORONOI_1)
     {
         printf("canBiomeGenerate(): unsupported layer (%d) or version (%d)\n",
-            layerId, mc);
+               layerId, mc);
         return 0;
     }
     return isOverworld(mc, id);
 }
-
 
 // TODO: This function requires testing across versions
 void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
@@ -3024,7 +3294,8 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
     switch (layer)
     {
     case L_SPECIAL_1024: // biomes added in (L_SPECIAL_1024, L_MUSHROOM_256]
-        if (mc <= MC_1_6) goto L_bad_layer;
+        if (mc <= MC_1_6)
+            goto L_bad_layer;
         if (id == Oceanic)
             genPotential(mL, mM, L_MUSHROOM_256, mc, mushroom_fields);
         if ((id & ~0xf00) >= Oceanic && (id & ~0xf00) <= Freezing)
@@ -3032,15 +3303,21 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
         break;
 
     case L_MUSHROOM_256: // biomes added in (L_MUSHROOM_256, L_DEEP_OCEAN_256]
-        if (mc >= MC_1_7) {
+        if (mc >= MC_1_7)
+        {
             if (id == Oceanic)
                 genPotential(mL, mM, L_DEEP_OCEAN_256, mc, deep_ocean);
             if ((id & ~0xf00) >= Oceanic && (id & ~0xf00) <= Freezing)
                 genPotential(mL, mM, L_DEEP_OCEAN_256, mc, id);
-        } else { // (L_MUSHROOM_256, L_BIOME_256] for 1.6
-            if (id == ocean || id == mushroom_fields) {
+        }
+        else
+        { // (L_MUSHROOM_256, L_BIOME_256] for 1.6
+            if (id == ocean || id == mushroom_fields)
+            {
                 genPotential(mL, mM, L_BIOME_256, mc, id);
-            } else {
+            }
+            else
+            {
                 genPotential(mL, mM, L_BIOME_256, mc, desert);
                 genPotential(mL, mM, L_BIOME_256, mc, forest);
                 genPotential(mL, mM, L_BIOME_256, mc, mountains);
@@ -3056,23 +3333,30 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
         break;
 
     case L_DEEP_OCEAN_256: // biomes added in (L_DEEP_OCEAN_256, L_BIOME_256]
-        if (mc <= MC_1_6) goto L_bad_layer;
+        if (mc <= MC_1_6)
+            goto L_bad_layer;
         switch (id & ~0xf00)
         {
         case Warm:
-            if (id & 0xf00) {
+            if (id & 0xf00)
+            {
                 genPotential(mL, mM, L_BIOME_256, mc, badlands_plateau);
                 genPotential(mL, mM, L_BIOME_256, mc, wooded_badlands_plateau);
-            } else {
+            }
+            else
+            {
                 genPotential(mL, mM, L_BIOME_256, mc, desert);
                 genPotential(mL, mM, L_BIOME_256, mc, savanna);
                 genPotential(mL, mM, L_BIOME_256, mc, plains);
             }
             break;
         case Lush:
-            if (id & 0xf00) {
+            if (id & 0xf00)
+            {
                 genPotential(mL, mM, L_BIOME_256, mc, jungle);
-            } else {
+            }
+            else
+            {
                 genPotential(mL, mM, L_BIOME_256, mc, forest);
                 genPotential(mL, mM, L_BIOME_256, mc, dark_forest);
                 genPotential(mL, mM, L_BIOME_256, mc, mountains);
@@ -3082,9 +3366,12 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
             }
             break;
         case Cold:
-            if (id & 0xf00) {
+            if (id & 0xf00)
+            {
                 genPotential(mL, mM, L_BIOME_256, mc, giant_tree_taiga);
-            } else {
+            }
+            else
+            {
                 genPotential(mL, mM, L_BIOME_256, mc, forest);
                 genPotential(mL, mM, L_BIOME_256, mc, mountains);
                 genPotential(mL, mM, L_BIOME_256, mc, taiga);
@@ -3102,16 +3389,18 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
         break;
 
     case L_BIOME_256: // biomes added in (L_BIOME_256, L_BIOME_EDGE_64]
-        if (mc >= MC_1_7) {
+        if (mc >= MC_1_7)
+        {
             if (mc >= MC_1_14 && id == jungle)
                 genPotential(mL, mM, L_BIOME_EDGE_64, mc, bamboo_jungle);
             if (id == wooded_badlands_plateau || id == badlands_plateau)
                 genPotential(mL, mM, L_BIOME_EDGE_64, mc, badlands);
-            else if(id == giant_tree_taiga)
+            else if (id == giant_tree_taiga)
                 genPotential(mL, mM, L_BIOME_EDGE_64, mc, taiga);
             else if (id == desert)
                 genPotential(mL, mM, L_BIOME_EDGE_64, mc, wooded_mountains);
-            else if (id == swamp) {
+            else if (id == swamp)
+            {
                 genPotential(mL, mM, L_BIOME_EDGE_64, mc, jungle_edge);
                 genPotential(mL, mM, L_BIOME_EDGE_64, mc, plains);
             }
@@ -3122,9 +3411,10 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
         // fallthrough
 
     case L_BIOME_EDGE_64: // biomes added in (L_BIOME_EDGE_64, L_HILLS_64]
-        if (mc <= MC_1_6 && layer == L_BIOME_EDGE_64) goto L_bad_layer;
+        if (mc <= MC_1_6 && layer == L_BIOME_EDGE_64)
+            goto L_bad_layer;
         if (!isShallowOcean(id) && getMutated(mc, id) > 0)
-             genPotential(mL, mM, L_HILLS_64, mc, getMutated(mc, id));
+            genPotential(mL, mM, L_HILLS_64, mc, getMutated(mc, id));
         switch (id)
         {
         case desert:
@@ -3165,7 +3455,8 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
                 genPotential(mL, mM, L_HILLS_64, mc, deep_ocean);
             break;
         case mountains:
-            if (mc >= MC_1_7) {
+            if (mc >= MC_1_7)
+            {
                 genPotential(mL, mM, L_HILLS_64, mc, wooded_mountains);
                 genPotential(mL, mM, L_HILLS_64, mc, getMutated(mc, wooded_mountains));
             }
@@ -3192,7 +3483,8 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
         break;
 
     case L_HILLS_64: // biomes added in (L_HILLS_64, L_RARE_BIOME_64]
-        if (mc <= MC_1_6) { // (L_HILLS_64, L_SHORE_16] for 1.6
+        if (mc <= MC_1_6)
+        { // (L_HILLS_64, L_SHORE_16] for 1.6
             if (id == mushroom_fields)
                 genPotential(mL, mM, L_SHORE_16, mc, mushroom_field_shore);
             else if (id == mountains)
@@ -3200,7 +3492,9 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
             else if (id != ocean && id != river && id != swamp)
                 genPotential(mL, mM, L_SHORE_16, mc, beach);
             genPotential(mL, mM, L_SHORE_16, mc, id);
-        } else {
+        }
+        else
+        {
             if (id == plains)
                 genPotential(mL, mM, L_SUNFLOWER_64, mc, sunflower_plains);
             genPotential(mL, mM, L_SUNFLOWER_64, mc, id);
@@ -3208,10 +3502,12 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
         break;
 
     case L_SUNFLOWER_64: // biomes added in (L_SUNFLOWER_64, L_SHORE_16] 1.7+
-        if (mc <= MC_1_6) goto L_bad_layer;
+        if (mc <= MC_1_6)
+            goto L_bad_layer;
         if (id == mushroom_fields)
             genPotential(mL, mM, L_SHORE_16, mc, mushroom_field_shore);
-        else if (getCategory(mc, id) == jungle) {
+        else if (getCategory(mc, id) == jungle)
+        {
             genPotential(mL, mM, L_SHORE_16, mc, beach);
             genPotential(mL, mM, L_SHORE_16, mc, jungle_edge);
         }
@@ -3237,27 +3533,34 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
         break;
 
     case L_RIVER_MIX_4: // biomes added in (L_RIVER_MIX_4, L_VORONOI_1]
-        if (mc >= MC_1_13 && isOceanic(id)) {
-            if (id == ocean) {
+        if (mc >= MC_1_13 && isOceanic(id))
+        {
+            if (id == ocean)
+            {
                 genPotential(mL, mM, L_VORONOI_1, mc, ocean);
                 genPotential(mL, mM, L_VORONOI_1, mc, warm_ocean);
                 genPotential(mL, mM, L_VORONOI_1, mc, lukewarm_ocean);
                 genPotential(mL, mM, L_VORONOI_1, mc, cold_ocean);
                 genPotential(mL, mM, L_VORONOI_1, mc, frozen_ocean);
-            } else if (id == deep_ocean) {
+            }
+            else if (id == deep_ocean)
+            {
                 genPotential(mL, mM, L_VORONOI_1, mc, deep_ocean);
                 genPotential(mL, mM, L_VORONOI_1, mc, deep_lukewarm_ocean);
                 genPotential(mL, mM, L_VORONOI_1, mc, deep_cold_ocean);
                 genPotential(mL, mM, L_VORONOI_1, mc, deep_frozen_ocean);
             }
-            else break;
+            else
+                break;
         }
         genPotential(mL, mM, L_VORONOI_1, mc, id);
         break;
 
     case L_VORONOI_1:
-        if (id < 128)   *mL |= 1ULL << id;
-        else            *mM |= 1ULL << (id-128);
+        if (id < 128)
+            *mL |= 1ULL << id;
+        else
+            *mM |= 1ULL << (id - 128);
         break;
 
     default:
@@ -3269,9 +3572,3 @@ void genPotential(uint64_t *mL, uint64_t *mM, int layer, int mc, int id)
         printf("genPotential() bad layer %d for version\n", layer);
     }
 }
-
-
-
-
-
-

@@ -1,0 +1,14 @@
+{
+  "files.associations": {
+    "finders.h": "c",
+    "direct.h": "c",
+    "stat.h": "c"
+  },
+  "terminal.integrated.shell.windows": "C:\\msys64\\usr\\bin\\bash.exe",
+  "terminal.integrated.env.windows":
+  {
+      "MSYSTEM": "MINGW64",
+      //"MSYS2_PATH_TYPE": "inherit",
+      "MSVSCODE": "1"
+  },
+}

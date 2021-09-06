@@ -4,13 +4,6 @@ ARFLAGS = cr
 override LDFLAGS = -lm
 override CFLAGS += -Wall -Wextra -fwrapv
 
-ifeq ($(OS),Windows_NT)
-	override CFLAGS += -D_WIN32
-	RM = del
-else
-	override LDFLAGS += -pthread
-	#RM = rm
-endif
 
 .PHONY : all debug release native libcubiomes clean
 

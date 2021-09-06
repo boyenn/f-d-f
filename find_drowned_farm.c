@@ -1,9 +1,16 @@
 // check the biome at a block position
 #include "finders.h"
 #include <stdio.h>
-
-int main()
+STRUCT(threadinfo_t)
 {
+    int start, end;
+};
+
+static void *doShit(void *data)
+{
+    threadinfo_t *info = (threadinfo_t *)data;
+
+    printf("Setup thread with start %d and end %d\n", info->start, info->end);
     // Initialize a stack of biome layers that reflects the biome generation of
     // Minecraft 1.17
     LayerStack g;
@@ -17,7 +24,6 @@ int main()
     Pos pos = {0, 0}; // block position to be checked
 
     int stepSize = 32;
-    int checkRange = 110000;
     int radius = 128;
     int wanted[] = {
         river};
@@ -31,11 +37,11 @@ int main()
     printf("a\n");
 
     int *area = allocCache(&g.layers[entry], w, h);
-    printf("a\n");
+    printf("aaa\n");
 
-    for (int x = -checkRange; x <= checkRange; x += stepSize)
+    for (int x = info->start; x <= info->end; x += stepSize)
     {
-        for (int z = -checkRange; z <= checkRange; z += stepSize)
+        for (int z = info->start; z <= info->end; z += stepSize)
         {
             if (checkForBiomes(&g, entry, area, seed, x, z, w, h, filter, 1) == 0)
             {
@@ -103,6 +109,27 @@ int main()
             }
         }
     }
+}
 
+int main()
+{
+    thread_id_t *tids = (thread_id_t *)malloc(8 * sizeof(*tids));
+    threadinfo_t *info = (threadinfo_t *)malloc(8 * sizeof(*info));
+
+    int checkRange = 100000;
+
+    int threads = 8;
+    for (int i = 0; i <= threads; i++)
+    {
+
+        info[i].start = (i * (checkRange) / threads);
+        info[i].end = ((i + 1) * (checkRange) / threads - 1);
+        pthread_create(&tids[i], NULL, doShit, (void *)&info[i]);
+    }
+
+    for (int t = 0; t < threads; t++)
+    {
+        pthread_join(tids[t], NULL);
+    }
     return 0;
 }

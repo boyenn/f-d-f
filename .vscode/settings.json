@@ -2,7 +2,9 @@
   "files.associations": {
     "finders.h": "c",
     "direct.h": "c",
-    "stat.h": "c"
+    "stat.h": "c",
+    "stdlib.h": "c",
+    "cstdlib": "c"
   },
   "terminal.integrated.shell.windows": "C:\\msys64\\usr\\bin\\bash.exe",
   "terminal.integrated.env.windows":
